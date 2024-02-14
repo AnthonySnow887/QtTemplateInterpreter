@@ -13,14 +13,14 @@ public:
 
     void appendParam(const QString &paramName, const QVariant &value);
     void removeParam(const QString &paramName);
-    bool hasParam(const QString& paramName) const;
-    QVariant param(const QString& paramName) const;
+    bool hasParam(const QString& paramName);
+    QVariant param(const QString& paramName);
     void clearParams();
 
     void appendTmpParam(const QString& paramName, const QVariant &paramValue);
     void removeTmpParam(const QString& paramName);
-    bool hasTmpParam(const QString& paramName) const;
-    QVariant tmpParam(const QString& paramName) const;
+    bool hasTmpParam(const QString& paramName);
+    QVariant tmpParam(const QString& paramName);
     void clearTmpParams();
 
     QVariantList parseHelpFunctionArgs(const QString &args, const QChar &delimiter = QChar(','));
@@ -32,7 +32,9 @@ private:
     QPair<QString, QString> prepareMapKeyValue(const QString &mapKeyValueStr, const QString &delimiter = QString(":"));
     QString unescapeStr(const QString &value);
 
-    QVariant paramValueRecursive(const QString &key, const QVariant &parent) const;
+    QVariant paramValueRecursive(const QString &key, const QVariant &parent);
+    QVariant evalParamMethod(QObject *object, const QMetaObject *mObj, const QString &funcName, const QVariantList &funcArgs);
+    QVariant evalParamMethod(void *object, const QMetaObject *mObj, const QString &funcName, const QVariantList &funcArgs);
 
 private:
     QHash<QString, QVariant> _params;

@@ -391,7 +391,7 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpParams(const QString &line, 
 //! \param paramName Parameter name
 //! \return
 //!
-QString QtTIParser::evalHelpParam(const QString &paramName) const
+QString QtTIParser::evalHelpParam(const QString &paramName)
 {
     return _parserArgs.param(paramName).toString();
 }
@@ -401,7 +401,7 @@ QString QtTIParser::evalHelpParam(const QString &paramName) const
 //! \param paramName Tmp parameter name
 //! \return
 //!
-QString QtTIParser::evalHelpTmpParam(const QString &paramName) const
+QString QtTIParser::evalHelpTmpParam(const QString &paramName)
 {
     return _parserArgs.tmpParam(paramName).toString();
 }

@@ -128,6 +128,36 @@ The interpreter passes variables to templates for further manipulation in the te
 >
 > NOTE:
 >
+> If you need to call a variable method, then its name must be followed by curly braces. Arguments can be specified in curly braces if required by the method.
+> To be able to call methods on a variable, it must be located in the public section of the class, and the macro ```Q_INVOKABLE``` must be specified before the method.
+>
+> ```cpp
+> #include <QMetaType>
+> 
+> class MyClass
+> {
+>   Q_GADGET
+> 
+> public:
+>     MyClass() {}
+>     ~MyClass() {}
+> 
+>     Q_INVOKABLE int func() const { return 123; }
+>     Q_INVOKABLE int func_summ(const int a, const int b) const { return a + b; }
+> 
+> };
+> Q_DECLARE_METATYPE(MyClass)
+> ```
+>
+> ```twig
+> {{ foo.func() }}
+> {{ foo.func_summ(1, 2) }}
+> ```
+>
+
+>
+> NOTE:
+>
 > It's important to know that the curly braces are not part of the variable but the print statement. 
 > When accessing variables inside tags, don't put the braces around them.
 >
@@ -185,7 +215,25 @@ To register as a variable of your own C++ class, follow these steps:
 >
 > NOTE:
 >
-> Calling class methods on WRITE will be ignored by the interpreter.
+> To be able to call methods on a variable, it must be located in the public section of the class, and the macro ```Q_INVOKABLE``` must be specified before the method.
+>
+> ```cpp
+> #include <QMetaType>
+> 
+> class MyClass
+> {
+>   Q_GADGET
+> 
+> public:
+>     MyClass() {}
+>     ~MyClass() {}
+> 
+>     Q_INVOKABLE int func() const { return 123; }
+>     Q_INVOKABLE int func_summ(const int a, const int b) const { return a + b; }
+> 
+> };
+> Q_DECLARE_METATYPE(MyClass)
+> ```
 >
 
 >
@@ -235,6 +283,10 @@ public:
     }
 
     const QString name() const { return _name; }
+    
+    // append public methods for call
+    Q_INVOKABLE int func() const { return 123; }
+    Q_INVOKABLE int func_summ(const int a, const int b) const { return a + b; }
 
 protected:
     QString _name;
@@ -305,6 +357,10 @@ public:
     ~MyClass() {}
 
     const QString name() const { return _name; }
+
+    // append public methods for call
+    Q_INVOKABLE int func() const { return 123; }
+    Q_INVOKABLE int func_summ(const int a, const int b) const { return a + b; }
 
 protected:
     QString _name;

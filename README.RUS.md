@@ -130,6 +130,36 @@ Bryu images:
 >
 > ПРИМЕЧАНИЕ:
 >
+> Если вам требуется вызвать метод переменной, то после его названия должны следовать фигурные скобки. В фигурных скобках могут быть указаны аргументы, если этого требует метод.
+> Для возможности вызова методов переменной, он должен располагаться в public секции класса, а перед методом должен быть указан макрос ```Q_INVOKABLE```.
+>
+> ```cpp
+> #include <QMetaType>
+>
+> class MyClass
+> {
+>   Q_GADGET
+>
+> public:
+>     MyClass() {}
+>     ~MyClass() {}
+>
+>     Q_INVOKABLE int func() const { return 123; }
+>     Q_INVOKABLE int func_summ(const int a, const int b) const { return a + b; }
+>
+> };
+> Q_DECLARE_METATYPE(MyClass)
+> ```
+>
+> ```twig
+> {{ foo.func() }}
+> {{ foo.func_summ(1, 2) }}
+> ```
+>
+
+>
+> ПРИМЕЧАНИЕ:
+>
 > Важно знать, что фигурные скобки являются частью не переменной, а оператора печати.
 > При доступе к переменным внутри тегов не заключайте их в фигурные скобки.
 >
@@ -188,7 +218,25 @@ ti.appendHelpParam("test_key_3", 123.22);
 >
 > ПРИМЕЧАНИЕ:
 >
-> Вызов методов класса НА ЗАПИСЬ (WRITE) будет игнорироваться интерпретатором.
+> Для возможности вызова методов переменной, он должен располагаться в public секции класса, а перед методом должен быть указан макрос ```Q_INVOKABLE```.
+>
+> ```cpp
+> #include <QMetaType>
+>
+> class MyClass
+> {
+>   Q_GADGET
+>
+> public:
+>     MyClass() {}
+>     ~MyClass() {}
+>
+>     Q_INVOKABLE int func() const { return 123; }
+>     Q_INVOKABLE int func_summ(const int a, const int b) const { return a + b; }
+>
+> };
+> Q_DECLARE_METATYPE(MyClass)
+> ```
 >
 
 >
@@ -238,6 +286,10 @@ public:
     }
 
     const QString name() const { return _name; }
+
+    // append public methods for call
+    Q_INVOKABLE int func() const { return 123; }
+    Q_INVOKABLE int func_summ(const int a, const int b) const { return a + b; }
 
 protected:
     QString _name;
@@ -308,6 +360,10 @@ public:
     ~MyClass() {}
 
     const QString name() const { return _name; }
+
+    // append public methods for call
+    Q_INVOKABLE int func() const { return 123; }
+    Q_INVOKABLE int func_summ(const int a, const int b) const { return a + b; }
 
 protected:
     QString _name;
