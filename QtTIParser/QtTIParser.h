@@ -28,8 +28,8 @@ public:
     QMap<QString, QVariant> parseAndExecHelpParams(const QString &line, const int lineNum, bool *isOk, QString &error);
 
 private:
-    QString evalHelpParam(const QString& paramName) const;
-    QString evalHelpTmpParam(const QString& paramName) const;
+    QString evalHelpParam(const QString& paramName);
+    QString evalHelpTmpParam(const QString& paramName);
 
     std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> evalHelpFunction(const QString& funcName, const QVariantList &args) const;
 

@@ -1,10 +1,12 @@
 #include "QtTIParserArgs.h"
 #include "../QtTIDefines/QtTIDefines.h"
+#include "../QtTIHelperFunction/QtTIAbstractHelperFunction.h"
 
 #include <QDebug>
 #include <QMetaType>
 #include <QMetaObject>
 #include <QMetaProperty>
+#include <QMetaMethod>
 
 
 QtTIParserArgs::~QtTIParserArgs()
@@ -72,7 +74,7 @@ void QtTIParserArgs::removeParam(const QString &paramName)
 //! \param paramName Parameter name
 //! \return
 //!
-bool QtTIParserArgs::hasParam(const QString &paramName) const
+bool QtTIParserArgs::hasParam(const QString &paramName)
 {
     return !param(paramName).isNull();
 }
@@ -82,7 +84,7 @@ bool QtTIParserArgs::hasParam(const QString &paramName) const
 //! \param paramName Parameter name
 //! \return
 //!
-QVariant QtTIParserArgs::param(const QString &paramName) const
+QVariant QtTIParserArgs::param(const QString &paramName)
 {
     QString tmpArgName = paramName.split(".")[0];
     if (_params.contains(tmpArgName))
@@ -125,7 +127,7 @@ void QtTIParserArgs::removeTmpParam(const QString &paramName)
 //! \param paramName Tmp parameter name
 //! \return
 //!
-bool QtTIParserArgs::hasTmpParam(const QString &paramName) const
+bool QtTIParserArgs::hasTmpParam(const QString &paramName)
 {
     return !tmpParam(paramName).isNull();
 }
@@ -135,7 +137,7 @@ bool QtTIParserArgs::hasTmpParam(const QString &paramName) const
 //! \param paramName Tmp parameter name
 //! \return
 //!
-QVariant QtTIParserArgs::tmpParam(const QString &paramName) const
+QVariant QtTIParserArgs::tmpParam(const QString &paramName)
 {
     QString tmpArgName = paramName.split(".")[0];
     if (_tmpParams.contains(tmpArgName))
@@ -472,8 +474,19 @@ QString QtTIParserArgs::unescapeStr(const QString &value)
 //!
 //!     Result: "hellow there: hi"
 //!
+//! === Example 2:
+//!     a - class Test with public methods:
+//!         Q_INVOKABLE int index() const { return 123; }
+//!         Q_INVOKABLE int index(const int i) const { return 123 + i; }
 //!
-QVariant QtTIParserArgs::paramValueRecursive(const QString &key, const QVariant &parent) const
+//!     {{ a.index() }}
+//!     {{ a.index(1) }}
+//!
+//!     Result:
+//!         a.index() = 123
+//!         a.index(1) = 124
+//!
+QVariant QtTIParserArgs::paramValueRecursive(const QString &key, const QVariant &parent)
 {
     if (key.isEmpty() || parent.isNull())
         return QVariant();
@@ -491,18 +504,26 @@ QVariant QtTIParserArgs::paramValueRecursive(const QString &key, const QVariant 
             const QMetaObject *mObj = objPtr->metaObject();
             if (!mObj)
                 return QVariant();
-            // search needed property
-            for (int i = mObj->propertyOffset(); i < mObj->propertyCount(); ++i) {
-                const QMetaProperty mProp = mObj->property(i);
-                if (mProp.name() == key) {
-                    if (!mProp.isReadable()) {
-                        qWarning() << qPrintable(QString("[QtTIParserArgs][paramValueRecursive] Class property '%1::%2' is not readable!")
-                                                 .arg(mObj->className())
-                                                 .arg(key));
-                        return QVariant();
+            QRegExp rxFunc("(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/]*)\\s*\\)\\s*)");
+            if (rxFunc.indexIn(key) != -1) {
+                // eval needed method
+                QString funcName = rxFunc.cap(2).trimmed();
+                QVariantList funcArgs = parseHelpFunctionArgs(rxFunc.cap(3).trimmed());
+                tmpValue = evalParamMethod(objPtr, mObj, funcName, funcArgs);
+            } else {
+                // search needed property
+                for (int i = mObj->propertyOffset(); i < mObj->propertyCount(); ++i) {
+                    const QMetaProperty mProp = mObj->property(i);
+                    if (mProp.name() == key) {
+                        if (!mProp.isReadable()) {
+                            qWarning() << qPrintable(QString("[QtTIParserArgs][paramValueRecursive] Class property '%1::%2' is not readable!")
+                                                     .arg(mObj->className())
+                                                     .arg(key));
+                            return QVariant();
+                        }
+                        tmpValue = mProp.read(objPtr);
+                        break;
                     }
-                    tmpValue = mProp.read(objPtr);
-                    break;
                 }
             }
         } else {
@@ -511,18 +532,27 @@ QVariant QtTIParserArgs::paramValueRecursive(const QString &key, const QVariant 
             const QMetaObject *mObj = QMetaType::metaObjectForType(tId);
             if (!mObj)
                 return QVariant();
-            // search needed property
-            for (int i = mObj->propertyOffset(); i < mObj->propertyCount(); ++i) {
-                const QMetaProperty mProp = mObj->property(i);
-                if (mProp.name() == key) {
-                    if (!mProp.isReadable()) {
-                        qWarning() << qPrintable(QString("[QtTIParserArgs][paramValueRecursive] Class property '%1::%2' is not readable!")
-                                                 .arg(mObj->className())
-                                                 .arg(key));
-                        return QVariant();
+
+            QRegExp rxFunc("(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/]*)\\s*\\)\\s*)");
+            if (rxFunc.indexIn(key) != -1) {
+                // eval needed method
+                QString funcName = rxFunc.cap(2).trimmed();
+                QVariantList funcArgs = parseHelpFunctionArgs(rxFunc.cap(3).trimmed());
+                tmpValue = evalParamMethod((void*)parent.data(), mObj, funcName, funcArgs);
+            } else {
+                // search needed property
+                for (int i = mObj->propertyOffset(); i < mObj->propertyCount(); ++i) {
+                    const QMetaProperty mProp = mObj->property(i);
+                    if (mProp.name() == key) {
+                        if (!mProp.isReadable()) {
+                            qWarning() << qPrintable(QString("[QtTIParserArgs][paramValueRecursive] Class property '%1::%2' is not readable!")
+                                                     .arg(mObj->className())
+                                                     .arg(key));
+                            return QVariant();
+                        }
+                        tmpValue = mProp.readOnGadget(parent.data());
+                        break;
                     }
-                    tmpValue = mProp.readOnGadget(parent.data());
-                    break;
                 }
             }
         }
@@ -531,4 +561,187 @@ QVariant QtTIParserArgs::paramValueRecursive(const QString &key, const QVariant 
     if (tmpKeys.isEmpty())
         return tmpValue;
     return paramValueRecursive(tmpKeys.join("."), tmpValue);
+}
+
+QVariant QtTIParserArgs::evalParamMethod(QObject *object, const QMetaObject *mObj, const QString &funcName, const QVariantList &funcArgs)
+{
+    QString funcArgsTypes = QtTIAbstractHelperFunction::typesToStr(QtTIAbstractHelperFunction::vListArgsTypes(funcArgs));
+    QByteArray mNorSignature = QMetaObject::normalizedSignature(QString("%1(%2)").arg(funcName).arg(funcArgsTypes).toStdString().c_str());
+    int mIndex = mObj->indexOfMethod(mNorSignature);
+    if (mIndex == -1) {
+        qWarning() << qPrintable(QString("[QtTIParserArgs][evalParamMethod] Class method '%1::%2(%3)' not found!")
+                                 .arg(mObj->className())
+                                 .arg(funcName)
+                                 .arg(funcArgsTypes));
+        return QVariant();
+    }
+    QMetaMethod mMethod = mObj->method(mIndex);
+    if (mMethod.access() != QMetaMethod::Public) {
+        qWarning() << qPrintable(QString("[QtTIParserArgs][evalParamMethod] Class method '%1::%2(%3)' is not public!")
+                                 .arg(mObj->className())
+                                 .arg(funcName)
+                                 .arg(funcArgsTypes));
+        return QVariant();
+    }
+
+    QList<QByteArray> mTypes = mMethod.parameterTypes();
+    if (mTypes.size() != funcArgs.size()) {
+        qWarning() << qPrintable(QString("[QtTIParserArgs][evalParamMethod] Invalid arguments count for class method '%1::%2(%3)'!")
+                                 .arg(mObj->className())
+                                 .arg(funcName)
+                                 .arg(funcArgsTypes));
+        return QVariant();
+    }
+
+    QVariantList funcArgsConverted;
+    for (int i = 0; i < mTypes.size(); i++) {
+        const QVariant& arg = funcArgs.at(i);
+
+        QByteArray methodTypeName = mTypes.at(i);
+        QByteArray argTypeName = arg.typeName();
+
+        QVariant::Type methodType = QVariant::nameToType(methodTypeName);
+        QVariant copy = QVariant(arg);
+
+        if (copy.type() != methodType) {
+            if (!copy.canConvert(methodType)
+                || !copy.convert(methodType)) {
+                qWarning() << qPrintable(QString("[QtTIParserArgs][evalParamMethod] Convert argument at index '%1' for class method '%2::%3(%4)' failed!")
+                                         .arg(i)
+                                         .arg(mObj->className())
+                                         .arg(funcName)
+                                         .arg(funcArgsTypes));
+                return QVariant();
+            }
+        }
+        funcArgsConverted << copy;
+    }
+
+    QList<QGenericArgument> funcArgsGeneric;
+    for (int i = 0; i < funcArgsConverted.size(); i++) {
+        QVariant& argument = funcArgsConverted[i];
+
+        // A const_cast is needed because calling data() would detach
+        // the QVariant.
+        QGenericArgument genericArgument(QMetaType::typeName(argument.userType()),
+                                         const_cast<void*>(argument.constData()));
+
+        funcArgsGeneric << genericArgument;
+    }
+
+    QVariant returnValue(QMetaType::type(mMethod.typeName()), static_cast<void*>(NULL));
+    QGenericReturnArgument returnArgument(mMethod.typeName(), const_cast<void*>(returnValue.constData()));
+    bool ok = mMethod.invoke(object,
+                             Qt::DirectConnection,
+                             returnArgument,
+                             funcArgsGeneric.value(0),
+                             funcArgsGeneric.value(1),
+                             funcArgsGeneric.value(2),
+                             funcArgsGeneric.value(3),
+                             funcArgsGeneric.value(4),
+                             funcArgsGeneric.value(5),
+                             funcArgsGeneric.value(6),
+                             funcArgsGeneric.value(7),
+                             funcArgsGeneric.value(8),
+                             funcArgsGeneric.value(9));
+
+    if (!ok) {
+        qWarning() << qPrintable(QString("[QtTIParserArgs][paramValueRecursive] Call class method '%2::%3(%4)' failed!")
+                                 .arg(mObj->className())
+                                 .arg(funcName)
+                                 .arg(funcArgsTypes));
+        return QVariant();
+    }
+    return returnValue;
+}
+
+QVariant QtTIParserArgs::evalParamMethod(void *object, const QMetaObject *mObj, const QString &funcName, const QVariantList &funcArgs)
+{
+    QString funcArgsTypes = QtTIAbstractHelperFunction::typesToStr(QtTIAbstractHelperFunction::vListArgsTypes(funcArgs));
+    QByteArray mNorSignature = QMetaObject::normalizedSignature(QString("%1(%2)").arg(funcName).arg(funcArgsTypes).toStdString().c_str());
+    int mIndex = mObj->indexOfMethod(mNorSignature);
+    if (mIndex == -1) {
+        qWarning() << qPrintable(QString("[QtTIParserArgs][evalParamMethod] Class method '%1::%2(%3)' not found!")
+                                 .arg(mObj->className())
+                                 .arg(funcName)
+                                 .arg(funcArgsTypes));
+        return QVariant();
+    }
+    QMetaMethod mMethod = mObj->method(mIndex);
+    if (mMethod.access() != QMetaMethod::Public) {
+        qWarning() << qPrintable(QString("[QtTIParserArgs][evalParamMethod] Class method '%1::%2(%3)' is not public!")
+                                 .arg(mObj->className())
+                                 .arg(funcName)
+                                 .arg(funcArgsTypes));
+        return QVariant();
+    }
+
+    QList<QByteArray> mTypes = mMethod.parameterTypes();
+    if (mTypes.size() != funcArgs.size()) {
+        qWarning() << qPrintable(QString("[QtTIParserArgs][evalParamMethod] Invalid arguments count for class method '%1::%2(%3)'!")
+                                 .arg(mObj->className())
+                                 .arg(funcName)
+                                 .arg(funcArgsTypes));
+        return QVariant();
+    }
+
+    QVariantList funcArgsConverted;
+    for (int i = 0; i < mTypes.size(); i++) {
+        const QVariant& arg = funcArgs.at(i);
+
+        QByteArray methodTypeName = mTypes.at(i);
+        QByteArray argTypeName = arg.typeName();
+
+        QVariant::Type methodType = QVariant::nameToType(methodTypeName);
+        QVariant copy = QVariant(arg);
+
+        if (copy.type() != methodType) {
+            if (!copy.canConvert(methodType)
+                || !copy.convert(methodType)) {
+                qWarning() << qPrintable(QString("[QtTIParserArgs][evalParamMethod] Convert argument at index '%1' for class method '%2::%3(%4)' failed!")
+                                         .arg(i)
+                                         .arg(mObj->className())
+                                         .arg(funcName)
+                                         .arg(funcArgsTypes));
+                return QVariant();
+            }
+        }
+        funcArgsConverted << copy;
+    }
+
+    QList<QGenericArgument> funcArgsGeneric;
+    for (int i = 0; i < funcArgsConverted.size(); i++) {
+        QVariant& argument = funcArgsConverted[i];
+
+        // A const_cast is needed because calling data() would detach
+        // the QVariant.
+        QGenericArgument genericArgument(QMetaType::typeName(argument.userType()),
+                                         const_cast<void*>(argument.constData()));
+
+        funcArgsGeneric << genericArgument;
+    }
+
+    QVariant returnValue(QMetaType::type(mMethod.typeName()), static_cast<void*>(NULL));
+    QGenericReturnArgument returnArgument(mMethod.typeName(), const_cast<void*>(returnValue.constData()));
+    bool ok = mMethod.invokeOnGadget(object,
+                                     returnArgument,
+                                     funcArgsGeneric.value(0),
+                                     funcArgsGeneric.value(1),
+                                     funcArgsGeneric.value(2),
+                                     funcArgsGeneric.value(3),
+                                     funcArgsGeneric.value(4),
+                                     funcArgsGeneric.value(5),
+                                     funcArgsGeneric.value(6),
+                                     funcArgsGeneric.value(7),
+                                     funcArgsGeneric.value(8),
+                                     funcArgsGeneric.value(9));
+
+    if (!ok) {
+        qWarning() << qPrintable(QString("[QtTIParserArgs][paramValueRecursive] Call class method '%2::%3(%4)' failed!")
+                                 .arg(mObj->className())
+                                 .arg(funcName)
+                                 .arg(funcArgsTypes));
+        return QVariant();
+    }
+    return returnValue;
 }
