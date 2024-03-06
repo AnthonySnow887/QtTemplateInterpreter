@@ -113,6 +113,8 @@ std::tuple<bool, QString, QString> QtTIControlBlockIf::evalBlock()
             return std::make_tuple(false, "", error);
         if (result.toBool())
             return buildBlockBody(_ifBody);
+    } else {
+        return std::make_tuple(false, "", "Incorrect conditions are specified for the IF block");
     }
 
     // check ELSEIF
@@ -140,7 +142,8 @@ std::tuple<bool, QString, QString> QtTIControlBlockIf::evalBlock()
     if (rxElse.indexIn(_elseCond) != -1)
         return buildBlockBody(_elseBody);
 
-    return std::make_tuple(false, "", "Incorrect conditions are specified for the IF block");
+    // none of the conditions matched, we return an empty result
+    return std::make_tuple(true, "", "");
 }
 
 //!
