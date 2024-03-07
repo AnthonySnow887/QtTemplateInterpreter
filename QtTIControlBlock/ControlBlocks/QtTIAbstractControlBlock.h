@@ -230,7 +230,7 @@ protected:
         }
 
         // function
-        QRegExp rxFunc("(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/]*)\\s*\\)\\s*)");
+        QRegExp rxFunc("^(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\]*)\\s*\\)\\s*)");
         if (rxFunc.indexIn(str) != -1) {
             QString funcName = rxFunc.cap(2).trimmed();
             QVariantList funcArgs = parser()->parserArgs()->parseHelpFunctionArgs(rxFunc.cap(3).trimmed());
