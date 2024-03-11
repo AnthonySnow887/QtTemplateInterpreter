@@ -172,6 +172,7 @@ QVariantList QtTIParserArgs::parseHelpFunctionArgs(const QString &args, const QC
     bool dbl_quote = false;
     int openSquareBrackets = 0;
     int openBraces = 0;
+    int roundBrackets = 0;
     for (int i = 0; i < args.size(); i++) {
         const QChar ch = args[i];
         QChar chPrev;
@@ -184,24 +185,32 @@ QVariantList QtTIParserArgs::parseHelpFunctionArgs(const QString &args, const QC
         if (ch == '"' && !quote && (chPrev != '\\'))
             dbl_quote = !dbl_quote;
         // check array
-        if (ch == '[' && (chPrev != '\\')) {
+        if (ch == '[' && (chPrev != '\\') && !quote && !dbl_quote) {
             openSquareBrackets++;
         }
-        if (ch == ']' && (chPrev != '\\')) {
+        if (ch == ']' && (chPrev != '\\') && !quote && !dbl_quote) {
             openSquareBrackets--;
         }
         // check hash
-        if (ch == '{' && (chPrev != '\\')) {
+        if (ch == '{' && (chPrev != '\\') && !quote && !dbl_quote) {
             openBraces++;
         }
-        if (ch == '}' && (chPrev != '\\')) {
+        if (ch == '}' && (chPrev != '\\') && !quote && !dbl_quote) {
             openBraces--;
+        }
+        // check func
+        if (ch == '(' && (chPrev != '\\') && !quote && !dbl_quote) {
+            roundBrackets++;
+        }
+        if (ch == ')' && (chPrev != '\\') && !quote && !dbl_quote) {
+            roundBrackets--;
         }
         // check delimiter
         if (ch == delimiter
             && !quote && !dbl_quote
             && openSquareBrackets == 0
-            && openBraces == 0) {
+            && openBraces == 0
+            && roundBrackets == 0) {
             tmpArgs.append(prepareHelpFunctionArg(currentArgStr));
             currentArgStr.clear();
             continue;
