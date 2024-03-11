@@ -128,7 +128,7 @@ The interpreter passes variables to templates for further manipulation in the te
 >
 > NOTE:
 >
-> If you need to call a variable method, then its name must be followed by curly braces. Arguments can be specified in curly braces if required by the method.
+> If you need to call a variable method, its name must be followed by parentheses ``` () ```. Arguments may be included in parentheses if the method requires them.
 > To be able to call methods on a variable, it must be located in the public section of the class, and the macro ```Q_INVOKABLE``` must be specified before the method.
 >
 > ```cpp
@@ -400,7 +400,7 @@ List of basic functions that are implemented in the interpreter:
 - ```[QList<QString>] keys (object)``` - Get list containing all the keys in the object. Supported object: QVariantMap, QVariantHash.
 - ```[QList<QVariant>] values (object)``` - Get list containing all the values in the object. Supported object: QVariantMap, QVariantHash.
 - ```[QVariant] value (object, key)``` - Get value associated with the key. Supported object: QVariantMap, QVariantHash.
-- ```[QVariant] value_at (object, pos)``` - Get item at index position 'pos' in the object. Supported object: QByteArray, QString, QVariantMap, QVariantHash.
+- ```[QVariant] value_at (object, pos)``` - Get item at index position 'pos' in the object. Supported object: QByteArray, QString, QStringList, QVariantList.
 - ```[QString] to_str (object)``` - Get string representation of object. Supported object: QByteArray, QString, QStringList, QVariantList, QVariantMap, QVariantHash.
 - ```[QVariant] first (object)``` - Get reference to the first item in the object. Supported object: QStringList, QVariantList, QVariantMap, QVariantHash.
 - ```[QVariant] last (object)``` - Get reference to the last item in the object. Supported object: QStringList, QVariantList, QVariantMap, QVariantHash.
@@ -417,10 +417,55 @@ List of basic functions that are implemented in the interpreter:
 - ```[object] remove_key (object, key)``` - Removes all the items that have the key 'key' from the object and return new object. Supported object: QVariantMap, QVariantHash.
 - ```[object] append (object, str/value)``` - Inserts 'str/value' at the end of the object and return new object. Supported object: QByteArray, QString, QStringList, QVariantList.
 - ```[object] append (object, key, value)``` - Inserts a new item with the key 'key' and a value of 'value' and return new object. Supported object: QVariantMap, QVariantHash.
+- ```[QString] str_concat(str_1, str_2)``` - combining two strings into one (str_1 and str_2 - QString type).
+- ```[bool] str_compare(str_1, str_2)``` - comparison of two strings (str_1 and str_2 - QString type).
+- ```[object] round(object)``` - mathematically correct rounding to the nearest integer (object - double / float).
+- ```[object] floor(object)``` - rounding down (object - double / float).
+- ```[object] ceil(object)``` - rounding up (object - double / float).
+- ```[int] to_int(value)``` - convert to Int (value - QVariant).
+- ```[uint] to_uint(value)``` - convert to UInt (value - QVariant).
+- ```[double] to_double(value)``` - convert to Double (value - QVariant).
+- ```[float] to_float(value)``` - convert to Float (value - QVariant).
+- ```[longlong] to_long_long(value)``` - convert to LongLong (value - QVariant).
+- ```[ulonglong] to_ulong_long(value)``` - convert to ULongLong (value - QVariant).
 
 Example of calling a function and getting its result:
 ```twig
 {{ is_null(my_param) }}
+```
+
+### RegExp (regular expressions)
+
+To create an object for working with regular expressions, use the functions:
+- ```[RegExp] make_reg_exp(pattern)``` - creates a RegExp class object (pattern - QString).
+
+The RegExp class supports the following methods:
+- ```[bool] is_empty()``` - Returns true if the pattern string is empty; otherwise returns false.
+- ```[bool] is_valid()``` - Returns true if the regular expression is valid; otherwise returns false. An invalid regular expression never matches.
+- ```[QString] pattern()``` - Returns the pattern string of the regular expression.
+- ```[void] set_pattern(QString pattern)``` - Sets the pattern string to pattern.
+- ```[bool] is_minimal()``` - Returns true if minimal (non-greedy) matching is enabled; otherwise returns false.
+- ```[void] set_minimal(bool minimal)``` - Enables or disables minimal matching. If minimal is false, matching is greedy (maximal) which is the default.
+- ```[bool] exact_match(QString str)``` - Returns true if str is matched exactly by this regular expression; otherwise returns false.
+- ```[int] index_in(QString str, int offset)``` - Attempts to find a match in str from position offset (0 by default). If offset is -1, the search starts at the last character; if -2, at the next to last character; etc. Returns the position of the first match, or -1 if there was no match.
+- ```[int] last_index_in(QString str, int offset)``` - Attempts to find a match backwards in str from position offset. If offset is -1 (the default), the search starts at the last character; if -2, at the next to last character; etc. Returns the position of the first match, or -1 if there was no match.
+- ```[int] matched_length()``` - Returns the length of the last matched string, or -1 if there was no match.
+- ```[int] capture_count()``` - Returns the number of captures contained in the regular expression.
+- ```[QStringList] captured_texts()``` - Returns a list of the captured text strings. The first string in the list is the entire matched string. Each subsequent list element contains a string that matched a (capturing) subexpression of the regexp.
+- ```[QString] cap(int nth)``` - Returns the text captured by the nth subexpression. The entire match has index 0 and the parenthesized subexpressions have indexes starting from 1 (excluding non-capturing parentheses).
+- ```[int] pos(int nth)``` - Returns the position of the nth captured text in the searched string. If nth is 0 (the default), pos() returns the position of the whole match.
+- ```[QString] error_string()``` - Returns a text string that explains why a regexp pattern is invalid the case being; otherwise returns "no error occurred".
+- ```[QString] escape(QString str)``` - Returns the string str with every regexp special character escaped with a backslash. The special characters are: ```$, (,), *, +, ., ?, [, ,], ^, {, | и }```.
+
+An example of working with the RegExp class:
+```twig
+{% set rx = make_reg_exp('my_key_(\d+)') %}
+{% if rx.index_in('my_key_123', 0) != -1 %}
+{% set rx_cap = rx.cap(1) %}
+RegExp cap value: {{ rx_cap }}
+{% else %}
+RegExp cap value: Not Found
+{% endif %}
 ```
 
 ### Registration of user functions

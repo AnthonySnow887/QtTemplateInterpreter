@@ -1,8 +1,10 @@
 #include "QtTIParserFunc.h"
+#include "HelperClasses/RegExp.h"
 
 #include <QJsonDocument>
 #include <QDateTime>
 #include <QRegExp>
+#include <qmath.h>
 
 QtTIParserFunc::QtTIParserFunc()
 {
@@ -317,6 +319,12 @@ QtTIParserFunc::QtTIParserFunc()
     // === Supported object:
     //      - QByteArray
     //      - QString
+    //      - int
+    //      - uint
+    //      - double
+    //      - float
+    //      - longlong
+    //      - ulonglong
     //      - QStringList
     //      - QVariantList
     //      - QVariantMap
@@ -327,6 +335,40 @@ QtTIParserFunc::QtTIParserFunc()
     }));
     appendHelpFunction(new QtTIHelperFunction<QString>("to_str", [](const QString &d) {
         return d;
+    }));
+    appendHelpFunction(new QtTIHelperFunction<int>("to_str", [](const int &d) {
+        return QString::number(d);
+    }));
+    appendHelpFunction(new QtTIHelperFunction<uint>("to_str", [](const uint &d) {
+        return QString::number(d);
+    }));
+    appendHelpFunction(new QtTIHelperFunction<double>("to_str", [](const double &d) {
+        return QString::number(d);
+    }));
+    appendHelpFunction(new QtTIHelperFunction<float>("to_str", [](const float &d) {
+        return QString::number(d);
+    }));
+    appendHelpFunction(new QtTIHelperFunction<qlonglong>("to_str", [](const qlonglong &d) {
+        return QString::number(d);
+    }));
+    appendHelpFunction(new QtTIHelperFunction<qulonglong>("to_str", [](const qulonglong &d) {
+        return QString::number(d);
+    }));
+    appendHelpFunction(new QtTIHelperFunction<QStringList>("to_str", [](const QStringList &d) {
+        QJsonDocument jDoc = QJsonDocument::fromVariant(d);
+        return QString::fromUtf8(jDoc.toJson(QJsonDocument::Compact));
+    }));
+    appendHelpFunction(new QtTIHelperFunction<QVariantList>("to_str", [](const QVariantList &d) {
+        QJsonDocument jDoc = QJsonDocument::fromVariant(d);
+        return QString::fromUtf8(jDoc.toJson(QJsonDocument::Compact));
+    }));
+    appendHelpFunction(new QtTIHelperFunction<QVariantMap>("to_str", [](const QVariantMap &d) {
+        QJsonDocument jDoc = QJsonDocument::fromVariant(d);
+        return QString::fromUtf8(jDoc.toJson(QJsonDocument::Compact));
+    }));
+    appendHelpFunction(new QtTIHelperFunction<QVariantHash>("to_str", [](const QVariantHash &d) {
+        QJsonDocument jDoc = QJsonDocument::fromVariant(d);
+        return QString::fromUtf8(jDoc.toJson(QJsonDocument::Compact));
     }));
     appendHelpFunction(new QtTIHelperFunction<QVariant>("to_str", [](const QVariant &d) {
         QJsonDocument jDoc = QJsonDocument::fromVariant(d);
@@ -749,6 +791,141 @@ QtTIParserFunc::QtTIParserFunc()
         tmpHash.insert(key, value);
         return tmpHash;
     }));
+
+    //
+    // Addition of two strings
+    //
+    // [QString] str_concat(str_1, str_2)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QString,QString>("str_concat", [](const QString &str_1, const QString &str_2) {
+        return str_1 + str_2;
+    }));
+
+    //
+    // Compare of two strings
+    //
+    // [bool] str_compare(str_1, str_2)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QString,QString>("str_compare", [](const QString &str_1, const QString &str_2) {
+        return str_1 == str_2;
+    }));
+
+    //
+    // Mathematically correct rounding to the nearest integer
+    //
+    // [double] round(value)
+    //
+    appendHelpFunction(new QtTIHelperFunction<double>("round", [](const double &value) {
+        return round(value);
+    }));
+
+    //
+    // Mathematically correct rounding to the nearest integer
+    //
+    // [float] round(value)
+    //
+    appendHelpFunction(new QtTIHelperFunction<float>("round", [](const float &value) {
+        return roundf(value);
+    }));
+
+    //
+    // rounds down
+    //
+    // [double] floor(value)
+    //
+    appendHelpFunction(new QtTIHelperFunction<double>("floor", [](const double &value) {
+        return floor(value);
+    }));
+
+    //
+    // Rounds down
+    //
+    // [float] floor(value)
+    //
+    appendHelpFunction(new QtTIHelperFunction<float>("floor", [](const float &value) {
+        return floorf(value);
+    }));
+
+    //
+    // Rounds up
+    //
+    // [double] ceil(value)
+    //
+    appendHelpFunction(new QtTIHelperFunction<double>("ceil", [](const double &value) {
+        return ceil(value);
+    }));
+
+    //
+    // Rounds up
+    //
+    // [float] ceil(value)
+    //
+    appendHelpFunction(new QtTIHelperFunction<float>("ceil", [](const float &value) {
+        return ceilf(value);
+    }));
+
+    //
+    // Convert to int
+    //
+    // [int] to_int(value)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QVariant>("to_int", [](const QVariant &value) {
+        return value.toInt();
+    }));
+
+    //
+    // Convert to uint
+    //
+    // [uint] to_uint(value)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QVariant>("to_uint", [](const QVariant &value) {
+        return value.toUInt();
+    }));
+
+    //
+    // Convert to double
+    //
+    // [double] to_double(value)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QVariant>("to_double", [](const QVariant &value) {
+        return value.toDouble();
+    }));
+
+    //
+    // Convert to float
+    //
+    // [float] to_float(value)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QVariant>("to_float", [](const QVariant &value) {
+        return value.toFloat();
+    }));
+
+    //
+    // Convert to longlong
+    //
+    // [longlong] to_long_long(value)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QVariant>("to_long_long", [](const QVariant &value) {
+        return value.toLongLong();
+    }));
+
+    //
+    // Convert to ulonglong
+    //
+    // [ulonglong] to_ulong_long(value)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QVariant>("to_ulong_long", [](const QVariant &value) {
+        return value.toULongLong();
+    }));
+
+    //
+    // Create RegExp class
+    //
+    // [RegExp] make_reg_exp(pattern)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QString>("make_reg_exp", [](const QString &pattern) {
+        return QVariant::fromValue(RegExp(pattern));
+    }));
 }
 
 QtTIParserFunc::~QtTIParserFunc()
@@ -843,11 +1020,17 @@ const QtTIAbstractHelperFunction *QtTIParserFunc::findHelpFunction(const QString
         return nullptr;
     const QStringList argsTypes = QtTIAbstractHelperFunction::vListArgsTypes(args);
     const QList<const QtTIAbstractHelperFunction *> funcLst = _functions.values(funcName);
+    // search strict args
     for (const QtTIAbstractHelperFunction *f : funcLst) {
         if (f->neededArgsTypes() == argsTypes)
             return f;
-        if (!strictArgs && f->canConvertArgsTypes(args))
-            return f;
+    }
+    // search can convert args
+    if (!strictArgs) {
+        for (const QtTIAbstractHelperFunction *f : funcLst) {
+            if (f->canConvertArgsTypes(args))
+                return f;
+        }
     }
     return nullptr;
 }

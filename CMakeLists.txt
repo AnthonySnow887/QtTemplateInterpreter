@@ -35,6 +35,7 @@ add_library(QtTemplateInterpreter STATIC
     QtTIParser/BracketsExpr/QtTIParserBracketsExpr.h
     QtTIParser/QtTIParserFunc.h
     QtTIParser/TernaryOperator/QtTIParserTernaryOperator.h
+    QtTIParser/HelperClasses/RegExp.h
     QtTemplateInterpreter.cpp
     QtTIControlBlock/ControlBlocks/QtTIControlBlockFor.cpp
     QtTIControlBlock/ControlBlocks/QtTIControlBlockIf.cpp
