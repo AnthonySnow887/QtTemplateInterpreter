@@ -923,7 +923,7 @@ Bryu images:
 >     --- b: 2 ---
 >     --- d: 4 ---
 > #}
-> {% set set my_map = { a: 1, b: 2, c: 3, d: 4 } %}
+> {% set my_map = { a: 1, b: 2, c: 3, d: 4 } %}
 > {% for key, val in my_map %}
 > {% if key != 'c' %}
 > --- {{ key }}: {{ val }} ---
@@ -1153,7 +1153,7 @@ Bryu images:
     --- A: 3 ---
     --- A: 4 ---
 #}
-{% set set my_arr = [ 1, 2, 3, 4 ] %}
+{% set my_arr = [ 1, 2, 3, 4 ] %}
 {% for a in my_arr %}
 --- A: {{ a }} ---
 {% endfor %}
@@ -1166,7 +1166,7 @@ Bryu images:
     --- c: 3 ---
     --- d: 4 ---
 #}
-{% set set my_map = { a: 1, b: 2, c: 3, d: 4 } %}
+{% set my_map = { a: 1, b: 2, c: 3, d: 4 } %}
 {% for key, val in my_map %}
 --- {{ key }}: {{ val }} ---
 {% endfor %}
@@ -1179,7 +1179,7 @@ Bryu images:
     --- VALUE: 3 ---
     --- VALUE: 4 ---
 #}
-{% set set my_map = { a: 1, b: 2, c: 3, d: 4 } %}
+{% set my_map = { a: 1, b: 2, c: 3, d: 4 } %}
 {% for val in my_map %}
 --- VALUE: {{ val }} ---
 {% endfor %}
