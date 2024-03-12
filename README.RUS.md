@@ -431,6 +431,12 @@ tb.appendHelpParam("my_test", QVariant::fromValue(new MyClass("this is my test n
 - ```[float] to_float(value)``` - преобразование к Float (value - QVariant).
 - ```[longlong] to_long_long(value)``` - преобразование к LongLong (value - QVariant).
 - ```[ulonglong] to_ulong_long(value)``` - преобразование к ULongLong (value - QVariant).
+- ```[int] str_to_int(value, base)``` - преобразование строки к Int (value - QString, base - int - основание, которое должно находиться в диапазоне от 2 до 36 или 0). Возвращает 0, если преобразование не удалось.
+- ```[uint] str_to_uint(value, base)``` - преобразование строки к UInt (value - QString, base - int - base, основание, которое должно находиться в диапазоне от 2 до 36 или 0). Возвращает 0, если преобразование не удалось.
+- ```[long] str_to_long(value, base)``` - преобразование строки к Long (value - QString, base - int - base, основание, которое должно находиться в диапазоне от 2 до 36 или 0). Возвращает 0, если преобразование не удалось.
+- ```[ulong] str_to_ulong(value, base)``` - преобразование строки к ULong (value - QString, base - int - base, основание, которое должно находиться в диапазоне от 2 до 36 или 0). Возвращает 0, если преобразование не удалось.
+- ```[longlong] str_to_long_long(value, base)``` - преобразование строки к LongLong (value - QString, base - int - base, основание, которое должно находиться в диапазоне от 2 до 36 или 0). Возвращает 0, если преобразование не удалось.
+- ```[ulonglong] str_to_ulong_long(value, base)``` - преобразование строки к ULongLong (value - QString, base - int - base, основание, которое должно находиться в диапазоне от 2 до 36 или 0). Возвращает 0, если преобразование не удалось.
 
 Пример вызова функции и получения ее результата:
 ```twig

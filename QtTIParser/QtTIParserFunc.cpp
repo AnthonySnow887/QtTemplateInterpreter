@@ -926,6 +926,60 @@ QtTIParserFunc::QtTIParserFunc()
     appendHelpFunction(new QtTIHelperFunction<QString>("make_reg_exp", [](const QString &pattern) {
         return QVariant::fromValue(RegExp(pattern));
     }));
+
+    //
+    // Convert string to int
+    //
+    // [int] str_to_int(value, base)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QString,int>("str_to_int", [](const QString &value, const int base) {
+        return value.toInt(nullptr, base);
+    }));
+
+    //
+    // Convert string to uint
+    //
+    // [uint] str_to_uint(value, base)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QString,int>("str_to_uint", [](const QString &value, const int base) {
+        return value.toUInt(nullptr, base);
+    }));
+
+    //
+    // Convert string to long
+    //
+    // [long] str_to_long(value, base)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QString,int>("to_long", [](const QString &value, const int base) {
+        return QVariant::fromValue(value.toLong(nullptr, base));
+    }));
+
+    //
+    // Convert string to ulong
+    //
+    // [ulong] str_to_ulong(value, base)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QString,int>("to_ulong", [](const QString &value, const int base) {
+        return QVariant::fromValue(value.toULong(nullptr, base));
+    }));
+
+    //
+    // Convert string to longlong
+    //
+    // [longlong] str_to_long_long(value, base)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QString,int>("to_long_long", [](const QString &value, const int base) {
+        return value.toLongLong(nullptr, base);
+    }));
+
+    //
+    // Convert string to ulonglong
+    //
+    // [ulonglong] str_to_ulong_long(value, base)
+    //
+    appendHelpFunction(new QtTIHelperFunction<QString,int>("to_ulong_long", [](const QString &value, const int base) {
+        return value.toULongLong(nullptr, base);
+    }));
 }
 
 QtTIParserFunc::~QtTIParserFunc()

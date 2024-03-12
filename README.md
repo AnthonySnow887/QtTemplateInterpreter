@@ -428,6 +428,12 @@ List of basic functions that are implemented in the interpreter:
 - ```[float] to_float(value)``` - convert to Float (value - QVariant).
 - ```[longlong] to_long_long(value)``` - convert to LongLong (value - QVariant).
 - ```[ulonglong] to_ulong_long(value)``` - convert to ULongLong (value - QVariant).
+- ```[int] str_to_int(value, base)``` - convert string to Int (value - QString, base - int - base, which is must be between 2 and 36, or 0). Returns 0 if the conversion fails.
+- ```[uint] str_to_uint(value, base)``` - convert string to UInt (value - QString, base - int - base, which is must be between 2 and 36, or 0). Returns 0 if the conversion fails.
+- ```[long] str_to_long(value, base)``` - convert string to Long (value - QString, base - int - base, which is must be between 2 and 36, or 0). Returns 0 if the conversion fails.
+- ```[ulong] str_to_ulong(value, base)``` - convert string to ULong (value - QString, base - int - base, which is must be between 2 and 36, or 0). Returns 0 if the conversion fails.
+- ```[longlong] str_to_long_long(value, base)``` - convert string to LongLong (value - QString, base - int - base, which is must be between 2 and 36, or 0). Returns 0 if the conversion fails.
+- ```[ulonglong] str_to_ulong_long(value, base)``` - convert string to ULongLong (value - QString, base - int - base, which is must be between 2 and 36, or 0). Returns 0 if the conversion fails.
 
 Example of calling a function and getting its result:
 ```twig
