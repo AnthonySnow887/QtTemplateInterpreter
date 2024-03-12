@@ -41,7 +41,7 @@ void QtTIParserArgs::appendParam(const QString &paramName, const QVariant &value
                                  .arg(paramName));
         return;
     }
-    if (value.isNull())
+    if (value.isNull() && value.type() != QVariant::Type::String)
         qWarning() << qPrintable(QString("[QtTIParserArgs][appendParam] Param value is Null (key: \"%1\")!")
                                  .arg(paramName));
 
@@ -76,7 +76,10 @@ void QtTIParserArgs::removeParam(const QString &paramName)
 //!
 bool QtTIParserArgs::hasParam(const QString &paramName)
 {
-    return !param(paramName).isNull();
+    const QVariant p = param(paramName);    
+    if (p.type() == QVariant::Type::String)
+        return true;
+    return !p.isNull();
 }
 
 //!
@@ -129,7 +132,10 @@ void QtTIParserArgs::removeTmpParam(const QString &paramName)
 //!
 bool QtTIParserArgs::hasTmpParam(const QString &paramName)
 {
-    return !tmpParam(paramName).isNull();
+    const QVariant p = tmpParam(paramName);
+    if (p.type() == QVariant::Type::String)
+        return true;
+    return !p.isNull();
 }
 
 //!
