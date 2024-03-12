@@ -71,7 +71,7 @@ std::tuple<bool, QString, QString> QtTIControlBlockSet::evalBlock()
             return std::make_tuple(false, "", QString("Parse parameter value in block 'set ...' in line %1 failed! Error: %2").arg(lineNum()).arg(error));
         if (paramName.isEmpty())
             return std::make_tuple(false, "", QString("Invalid parameter name (empty) in line %1").arg(lineNum()));
-        if (paramValue.isNull())
+        if (paramValue.isNull() && paramValue.type() != QVariant::Type::String)
             return std::make_tuple(false, "", QString("Invalid parameter value (Null) in line %1").arg(lineNum()));
         if (parser()->parserArgs()->hasParam(paramName))
             return std::make_tuple(false, "", QString("Parameter with name '%1' in line %2 already declared in the global parameter list").arg(paramName).arg(lineNum()));
