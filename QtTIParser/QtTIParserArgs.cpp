@@ -519,7 +519,7 @@ QVariant QtTIParserArgs::paramValueRecursive(const QString &key, const QVariant 
             const QMetaObject *mObj = objPtr->metaObject();
             if (!mObj)
                 return QVariant();
-            QRegExp rxFunc("(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\^\\$\\\\]*)\\s*\\)\\s*)");
+            QRegExp rxFunc("^(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*)");
             if (rxFunc.indexIn(key) != -1) {
                 // eval needed method
                 QString funcName = rxFunc.cap(2).trimmed();
@@ -548,7 +548,7 @@ QVariant QtTIParserArgs::paramValueRecursive(const QString &key, const QVariant 
             if (!mObj)
                 return QVariant();
 
-            QRegExp rxFunc("(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\^\\$\\\\]*)\\s*\\)\\s*)");
+            QRegExp rxFunc("^(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*)");
             if (rxFunc.indexIn(key) != -1) {
                 // eval needed method
                 QString funcName = rxFunc.cap(2).trimmed();

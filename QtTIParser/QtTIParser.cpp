@@ -145,7 +145,7 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpFunctions(const QString &lin
     error.clear();
     QMap<QString, QVariant> tmpRes;
     QString tmpLine = line;
-    QRegExp rxFunc("(\\{([\\{\\#])\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\]*)\\s*\\)\\s*([\\}\\#])\\})");
+    QRegExp rxFunc("(\\{([\\{\\#])\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*([\\}\\#])\\})");
     int pos = 0;
     while ((pos = rxFunc.indexIn(line, pos)) != -1) {
         pos += rxFunc.matchedLength();
