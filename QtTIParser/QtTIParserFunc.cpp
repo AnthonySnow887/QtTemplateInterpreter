@@ -950,7 +950,7 @@ QtTIParserFunc::QtTIParserFunc()
     //
     // [long] str_to_long(value, base)
     //
-    appendHelpFunction(new QtTIHelperFunction<QString,int>("to_long", [](const QString &value, const int base) {
+    appendHelpFunction(new QtTIHelperFunction<QString,int>("str_to_long", [](const QString &value, const int base) {
         return QVariant::fromValue(value.toLong(nullptr, base));
     }));
 
@@ -959,7 +959,7 @@ QtTIParserFunc::QtTIParserFunc()
     //
     // [ulong] str_to_ulong(value, base)
     //
-    appendHelpFunction(new QtTIHelperFunction<QString,int>("to_ulong", [](const QString &value, const int base) {
+    appendHelpFunction(new QtTIHelperFunction<QString,int>("str_to_ulong", [](const QString &value, const int base) {
         return QVariant::fromValue(value.toULong(nullptr, base));
     }));
 
@@ -968,7 +968,7 @@ QtTIParserFunc::QtTIParserFunc()
     //
     // [longlong] str_to_long_long(value, base)
     //
-    appendHelpFunction(new QtTIHelperFunction<QString,int>("to_long_long", [](const QString &value, const int base) {
+    appendHelpFunction(new QtTIHelperFunction<QString,int>("str_to_long_long", [](const QString &value, const int base) {
         return value.toLongLong(nullptr, base);
     }));
 
@@ -977,7 +977,7 @@ QtTIParserFunc::QtTIParserFunc()
     //
     // [ulonglong] str_to_ulong_long(value, base)
     //
-    appendHelpFunction(new QtTIHelperFunction<QString,int>("to_ulong_long", [](const QString &value, const int base) {
+    appendHelpFunction(new QtTIHelperFunction<QString,int>("str_to_ulong_long", [](const QString &value, const int base) {
         return value.toULongLong(nullptr, base);
     }));
 }
