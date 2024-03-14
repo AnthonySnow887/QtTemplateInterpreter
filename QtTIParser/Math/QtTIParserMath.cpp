@@ -225,21 +225,27 @@ std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation(const QVar
 template<typename T>
 std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation_t_int(const T &left, const T &right, const QString &op)
 {
-    if (op == "+")
+    if (op == "+") {
         return std::make_tuple(true, left + right, "");
-    else if (op == "-")
+    } else if (op == "-") {
         return std::make_tuple(true, left - right, "");
-    else if (op == "/")
+    } else if (op == "/") {
+        if (right == 0)
+            return std::make_tuple(false, QVariant(), "Division by zero!");
         return std::make_tuple(true, left / right, "");
-    else if (op == "*")
+    } else if (op == "*") {
         return std::make_tuple(true, left * right, "");
-    else if (op == "%")
+    } else if (op == "%") {
+        if (right == 0)
+            return std::make_tuple(false, QVariant(), "Division by zero!");
         return std::make_tuple(true, left % right, "");
-    else if (op == "//")
+    } else if (op == "//") {
+        if (right == 0)
+            return std::make_tuple(false, QVariant(), "Division by zero!");
         return std::make_tuple(true, static_cast<int>(left / right), "");
-    else if (op == "**")
+    } else if (op == "**") {
         return std::make_tuple(true, std::pow(left, right), "");
-
+    }
     return std::make_tuple(false, QVariant(), QString("Unsupported math operator '%1'").arg(op));
 }
 
@@ -253,20 +259,27 @@ std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation_t_int(cons
 template<typename T>
 std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation_t_real(const T &left, const T &right, const QString &op)
 {
-    if (op == "+")
+    if (op == "+") {
         return std::make_tuple(true, left + right, "");
-    else if (op == "-")
+    } else if (op == "-") {
         return std::make_tuple(true, left - right, "");
-    else if (op == "/")
+    } else if (op == "/") {
+        if (right == 0.0)
+            return std::make_tuple(false, QVariant(), "Division by zero!");
         return std::make_tuple(true, left / right, "");
-    else if (op == "*")
+    } else if (op == "*") {
         return std::make_tuple(true, left * right, "");
-    else if (op == "%")
+    } else if (op == "%") {
+        if (right == 0.0)
+            return std::make_tuple(false, QVariant(), "Division by zero!");
         return std::make_tuple(true, std::fmod(left, right), "");
-    else if (op == "//")
+    } else if (op == "//") {
+        if (right == 0.0)
+            return std::make_tuple(false, QVariant(), "Division by zero!");
         return std::make_tuple(true, static_cast<int>(left / right), "");
-    else if (op == "**")
+    } else if (op == "**") {
         return std::make_tuple(true, std::pow(left, right), "");
+    }
 
     return std::make_tuple(false, QVariant(), QString("Unsupported math operator '%1'").arg(op));
 }
