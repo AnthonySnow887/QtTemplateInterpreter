@@ -105,6 +105,14 @@ private:
     QMap<int,QString> _ifBody;
     QMap<int,QString> _elseBody;
     QList<QMap<int,QString>> _elseIfBodys;
+
+    static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> evalCond(const QString &str,
+                                                                            QtTIParserArgs *parserArgs,
+                                                                            QtTIParserFunc *parserFunc);
+
+    static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseParamValue(const QString &str,
+                                                                                   QtTIParserArgs *parserArgs,
+                                                                                   QtTIParserFunc *parserFunc);
 };
 
 #endif // QTTICONTROLBLOCKIF_H

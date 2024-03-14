@@ -1,6 +1,8 @@
 #include "QtTIControlBlockIf.h"
 #include "../QtTIControlBlockFabric.h"
+#include "../../QtTIParser/BracketsExpr/QtTIParserBracketsExpr.h"
 #include "../../QtTIParser/Logic/QtTIParserLogic.h"
+#include "../../QtTIParser/Math/QtTIParserMath.h"
 
 QtTIControlBlockIf::QtTIControlBlockIf(QtTIParser *parser)
     : QtTIAbstractControlBlock(parser, -1)
@@ -108,10 +110,15 @@ std::tuple<bool, QString, QString> QtTIControlBlockIf::evalBlock()
         QString ifConf = rxIf.cap(2).trimmed();
         bool isOk = false;
         QString error;
-        QVariant result = QtTIParserLogic::parseLogic(ifConf, parser()->parserArgs(), parser()->parserFunc(), &isOk, error);
+        QVariant result;
+        std::tie(isOk, result, error) = evalCond(ifConf, parser()->parserArgs(), parser()->parserFunc());
         if (!isOk)
             return std::make_tuple(false, "", error);
-        if (result.toBool())
+        if (result.type() == QVariant::Bool
+            && result.toBool())
+            return buildBlockBody(_ifBody);
+        else if (result.type() != QVariant::Bool
+                 && !result.isNull())
             return buildBlockBody(_ifBody);
     } else {
         return std::make_tuple(false, "", "Incorrect conditions are specified for the IF block");
@@ -128,10 +135,15 @@ std::tuple<bool, QString, QString> QtTIControlBlockIf::evalBlock()
                 QString ifConf = rxElseIf.cap(2).trimmed();
                 bool isOk = false;
                 QString error;
-                QVariant result = QtTIParserLogic::parseLogic(ifConf, parser()->parserArgs(), parser()->parserFunc(), &isOk, error);
+                QVariant result;
+                std::tie(isOk, result, error) = evalCond(ifConf, parser()->parserArgs(), parser()->parserFunc());
                 if (!isOk)
                     return std::make_tuple(false, "", error);
-                if (result.toBool())
+                if (result.type() == QVariant::Bool
+                    && result.toBool())
+                    return buildBlockBody(elseIfBody);
+                else if (result.type() != QVariant::Bool
+                         && !result.isNull())
                     return buildBlockBody(elseIfBody);
             }
         }
@@ -168,4 +180,110 @@ void QtTIControlBlockIf::appendBlockBody(const QString &blockBody, const int lin
         default:
             break;
     }
+}
+
+//!
+//! \brief Evaluate condition
+//! \param str
+//! \param parserArgs
+//! \param parserFunc
+//! \return
+//!
+std::tuple<bool, QVariant, QString> QtTIControlBlockIf::evalCond(const QString &str,
+                                                                 QtTIParserArgs *parserArgs,
+                                                                 QtTIParserFunc *parserFunc)
+{
+    if (str.isEmpty())
+        return std::make_tuple(false, QVariant(), "Eval condition failed (empty string passed)");
+
+    QStringList validStringsBeforeBracket({ "+", "-", "/", "%", "//", "*", "**", "and", "or", "not", "&&", "||" });
+    QtTIBracketsNode brNode = QtTIParserBracketsExpr::parseBracketsExpression(str, validStringsBeforeBracket, parserArgs, [parserArgs, parserFunc](const QString &nodeBody) {
+        return QtTIControlBlockIf::parseParamValue(nodeBody, parserArgs, parserFunc);
+    });
+    if (!brNode.isValid())
+        return std::make_tuple(false, QVariant(), QString("Invalid brackets node for expression '%1'").arg(str));
+
+    return brNode.evalNodeBody();
+}
+
+//!
+//! \brief Parse parameter value from string
+//! \param str Parameter value string view
+//! \param parserArgs
+//! \param parserFunc
+//! \return
+//!
+std::tuple<bool, QVariant, QString> QtTIControlBlockIf::parseParamValue(const QString &str,
+                                                                        QtTIParserArgs *parserArgs,
+                                                                        QtTIParserFunc *parserFunc)
+{
+    if (str.isEmpty())
+        return std::make_tuple(false, QVariant(), "Parse value failed (empty string passed)");
+
+    // logic
+    if (QtTIParserLogic::isLogicExpr(str)) {
+        bool isOk = false;
+        QString error;
+        QVariant result = QtTIParserLogic::parseLogic(str, parserArgs, parserFunc, &isOk, error);
+        if (!isOk)
+            return std::make_tuple(false, QVariant(), error);
+
+        return std::make_tuple(true, result, "");
+    }
+
+    // math
+    if (QtTIParserMath::isMathExpr(str)) {
+        bool isOk = false;
+        QString error;
+        QVariant result = QtTIParserMath::parseMath(str, parserArgs, &isOk, error);
+        if (!isOk)
+            return std::make_tuple(false, QVariant(), error);
+
+        return std::make_tuple(true, result, "");
+    }
+
+    QString tmpStr = str;
+    QRegExp rx("not\\s+(.*)");
+    const bool useNot = rx.exactMatch(str);
+    if (useNot)
+        tmpStr = rx.cap(1);
+
+    // function
+    QRegExp rxFunc("^(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*)");
+    if (rxFunc.indexIn(tmpStr) != -1) {
+        QString funcName = rxFunc.cap(2).trimmed();
+        QVariantList funcArgs = parserArgs->parseHelpFunctionArgs(rxFunc.cap(3).trimmed());
+        bool isOk = false;
+        QString error;
+        QVariant result;
+        std::tie(isOk, result, error) = parserFunc->evalHelpFunction(funcName, funcArgs);
+        if (!isOk)
+            return std::make_tuple(false, QVariant(), error);
+        if (useNot) {
+            if (result.type() == QVariant::Bool)
+                return std::make_tuple(true, !result.toBool(), "");
+            else if (result.isNull())
+                return std::make_tuple(true, true, "");
+            else
+                return std::make_tuple(true, false, "");
+        }
+        return std::make_tuple(true, result, "");
+    }
+
+    // arg
+    QVariantList tmp = parserArgs->parseHelpFunctionArgs(tmpStr);
+    if (tmp.isEmpty())
+        return std::make_tuple(false, QVariant(), "Parse value failed");
+    if (tmp.size() > 1)
+        return std::make_tuple(false, QVariant(), "Parse value failed (more than one argument is given)");
+
+    if (useNot) {
+        if (tmp[0].type() == QVariant::Bool)
+            return std::make_tuple(true, !tmp[0].toBool(), "");
+        else if (tmp[0].isNull())
+            return std::make_tuple(true, true, "");
+        else
+            return std::make_tuple(true, false, "");
+    }
+    return std::make_tuple(true, tmp[0], "");
 }
