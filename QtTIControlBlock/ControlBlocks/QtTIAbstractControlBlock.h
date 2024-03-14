@@ -218,6 +218,8 @@ protected:
                 tmpData += "\r\n";
 
             QString line = it.value();
+            if (it.key() == lineNum())
+                line = QtTIAbstractControlBlock::lstrip(line); // trim left
 
             // search params & functions
             bool isOk = false;
@@ -279,6 +281,26 @@ protected:
             return std::make_tuple(false, QVariant(), "Parse value failed (more than one argument is given)");
 
         return std::make_tuple(true, tmp[0], "");
+    }
+
+    static QString lstrip(const QString& str)
+    {
+        int n = 0;
+        for (; n < str.size(); ++n) {
+            if (!str.at(n).isSpace())
+                return str.right(n);
+        }
+        return "";
+    }
+
+    static QString rstrip(const QString& str)
+    {
+        int n = str.size() - 1;
+        for (; n >= 0; --n) {
+            if (!str.at(n).isSpace())
+                return str.left(n + 1);
+        }
+        return "";
     }
 
 private:
