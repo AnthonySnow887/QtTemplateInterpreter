@@ -87,6 +87,7 @@ std::tuple<bool, QString, QtTIAbstractControlBlock *, QString, QString> QtTICont
                 continue;
             } else if (curBlock && curBlock->isBlockCondEnd(blockCond)) {
                 if (!curBlock->parentBlock()) {
+                    int curBlockLine = curBlock->lineNum();
                     bool isOk = false;
                     QString res, err;
                     std::tie(isOk, res, err) = curBlock->evalBlock();
@@ -96,7 +97,7 @@ std::tuple<bool, QString, QtTIAbstractControlBlock *, QString, QString> QtTICont
                     if (!isOk) {
                         QString errFull = QString("Eval control block '%1' in line %2 failed! Error: %3")
                                           .arg(blockCond)
-                                          .arg(lineNum)
+                                          .arg(curBlockLine)
                                           .arg(err);
                         return std::make_tuple(false, "", nullptr, "", errFull);
                     }
@@ -121,6 +122,7 @@ std::tuple<bool, QString, QtTIAbstractControlBlock *, QString, QString> QtTICont
             isBlockBody = true;
             if (curBlock->isBlockCondEnd(blockCond)) {
                 if (!curBlock->parentBlock()) {
+                    int curBlockLine = curBlock->lineNum();
                     bool isOk = false;
                     QString res, err;
                     std::tie(isOk, res, err) = curBlock->evalBlock();
@@ -130,7 +132,7 @@ std::tuple<bool, QString, QtTIAbstractControlBlock *, QString, QString> QtTICont
                     if (!isOk) {
                         QString errFull = QString("Eval control block '%1' in line %2 failed! Error: %3")
                                           .arg(blockCond)
-                                          .arg(lineNum)
+                                          .arg(curBlockLine)
                                           .arg(err);
                         return std::make_tuple(false, "", nullptr, "", errFull);
                     }
@@ -149,7 +151,7 @@ std::tuple<bool, QString, QtTIAbstractControlBlock *, QString, QString> QtTICont
         if (isBlockCond)
             blockCond += ch;
         else if (isBlockBody && curBlock)
-            curBlock->appendBlockBody(ch);
+            curBlock->appendBlockBody(ch, lineNum);
         else
             tmpLinePart += ch;
     }

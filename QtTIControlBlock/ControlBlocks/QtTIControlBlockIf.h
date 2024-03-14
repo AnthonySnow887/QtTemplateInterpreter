@@ -93,7 +93,7 @@ public:
     bool isBlockCondEnd(const QString &blockCond) final;
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> evalBlock() final;
 
-    void appendBlockBody(const QString &blockBody) final;
+    void appendBlockBody(const QString &blockBody, const int lineNum) final;
 
 private:
     QString _ifCond;
@@ -102,9 +102,9 @@ private:
 
     BodyPosition _bodyPos {BodyPosition::If};
 
-    QString _ifBody;
-    QString _elseBody;
-    QStringList _elseIfBodys;
+    QMap<int,QString> _ifBody;
+    QMap<int,QString> _elseBody;
+    QList<QMap<int,QString>> _elseIfBodys;
 };
 
 #endif // QTTICONTROLBLOCKIF_H

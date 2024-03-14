@@ -73,7 +73,7 @@ void QtTIControlBlockIf::appendBlockCondIntermediate(const QString &blockCond)
     QRegExp rxElseIf("(\\s{0,}elseif\\s+(.*))");
     if (rxElseIf.indexIn(blockCond) != -1) {
         _elseIfConds.append(blockCond);
-        _elseIfBodys.append(QString());
+        _elseIfBodys.append(QMap<int,QString>());
         _bodyPos = BodyPosition::ElseIf;
         return;
     }
@@ -121,7 +121,7 @@ std::tuple<bool, QString, QString> QtTIControlBlockIf::evalBlock()
     if (!_elseIfConds.isEmpty()) {
         for (int i = 0; i < _elseIfConds.size(); i++) {
             const QString elseIfCond = _elseIfConds[i];
-            const QString elseIfBody = _elseIfBodys[i];
+            const QMap<int,QString> elseIfBody = _elseIfBodys[i];
             // check IF
             QRegExp rxElseIf("(\\s{0,}elseif\\s+(.*))");
             if (rxElseIf.indexIn(elseIfCond) != -1) {
@@ -150,19 +150,19 @@ std::tuple<bool, QString, QString> QtTIControlBlockIf::evalBlock()
 //! \brief Append control block body
 //! \param blockBody Control block body
 //!
-void QtTIControlBlockIf::appendBlockBody(const QString &blockBody)
+void QtTIControlBlockIf::appendBlockBody(const QString &blockBody, const int lineNum)
 {
     switch (_bodyPos) {
         case BodyPosition::If: {
-            _ifBody += blockBody;
+            _ifBody[lineNum].append(blockBody);
             break;
         }
         case BodyPosition::Else: {
-            _elseBody += blockBody;
+            _elseBody[lineNum].append(blockBody);
             break;
         }
         case BodyPosition::ElseIf: {
-            _elseIfBodys[_elseIfBodys.size() - 1] += blockBody;
+            _elseIfBodys[_elseIfBodys.size() - 1][lineNum].append(blockBody);
             break;
         }
         default:

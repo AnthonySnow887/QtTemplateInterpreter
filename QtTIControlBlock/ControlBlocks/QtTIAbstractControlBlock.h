@@ -6,6 +6,7 @@
 #include <QList>
 #include <QTextStream>
 #include <QCryptographicHash>
+#include <QMap>
 #include "../../QtTIParser/QtTIParser.h"
 #include "../../QtTIParser/Logic/QtTIParserLogic.h"
 #include "../../QtTIParser/Math/QtTIParserMath.h"
@@ -86,7 +87,7 @@ public:
             return block->evalBlock();
         }));
         // append sub block function macros
-        appendBlockBody(QString("{{ eval_block_%1() }}").arg(block->uuidHash()));
+        appendBlockBody(QString("{{ eval_block_%1() }}").arg(block->uuidHash()), block->lineNum());
     }
 
     //!
@@ -145,9 +146,11 @@ public:
     //!
     //! \brief Append control block body
     //! \param blockBody Control block body
+    //! \param lineNum Control block body line number
     //!
-    virtual void appendBlockBody(const QString &blockBody) {
+    virtual void appendBlockBody(const QString &blockBody, const int lineNum) {
         Q_UNUSED(blockBody)
+        Q_UNUSED(lineNum)
     }
 
 protected:
@@ -172,6 +175,8 @@ protected:
     //! \param data Control block body
     //! \return
     //!
+    //! NOTE: This method calculates line numbers from the line number of the beginning of the block.
+    //!
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> buildBlockBody(QString data)
     {
         QTextStream in(&data);
@@ -189,6 +194,35 @@ protected:
             bool isOk = false;
             QString error;
             std::tie(isOk, line, error) = _parser->parseLine(line, lineNum);
+            if (!isOk)
+                return std::make_tuple(false, "", error);
+
+            tmpData += line;
+        }
+        return std::make_tuple(true, tmpData, "");
+    }
+
+    //!
+    //! \brief Build control block body
+    //! \param data Control block body
+    //! \return
+    //!
+    std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> buildBlockBody(const QMap<int/*lineNum*/,QString/*lineData*/> &data)
+    {
+        QString tmpData;
+        QMapIterator<int,QString> it(data);
+        while (it.hasNext()) {
+            it.next();
+            if (!tmpData.isEmpty()
+                && tmpData[tmpData.size() - 1] != '\n')
+                tmpData += "\r\n";
+
+            QString line = it.value();
+
+            // search params & functions
+            bool isOk = false;
+            QString error;
+            std::tie(isOk, line, error) = _parser->parseLine(line, it.key());
             if (!isOk)
                 return std::make_tuple(false, "", error);
 

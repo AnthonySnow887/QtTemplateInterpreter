@@ -56,13 +56,13 @@ public:
     QString blockCondition() const final;
     bool isBlockCondStart(const QString &blockCond) final;
     bool isBlockCondEnd(const QString &blockCond) final;
-    void appendBlockBody(const QString &blockBody) final;
+    void appendBlockBody(const QString &blockBody, const int lineNum) final;
 
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> evalBlock() final;
 
 private:
     QString _blockCond;
-    QString _blockBody;
+    QMap<int,QString> _blockBody;
 
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> evalFor(const QStringList &args, const QVariant &container);
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> evalList(const QString &arg, const QVariant &container);

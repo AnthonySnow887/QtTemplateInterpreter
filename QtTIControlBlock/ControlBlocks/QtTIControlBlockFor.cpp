@@ -62,9 +62,9 @@ bool QtTIControlBlockFor::isBlockCondEnd(const QString &blockCond)
 //! \brief Append control block body
 //! \param blockBody Control block body
 //!
-void QtTIControlBlockFor::appendBlockBody(const QString &blockBody)
+void QtTIControlBlockFor::appendBlockBody(const QString &blockBody, const int lineNum)
 {
-    _blockBody += blockBody;
+    _blockBody[lineNum].append(blockBody);
 }
 
 //!
