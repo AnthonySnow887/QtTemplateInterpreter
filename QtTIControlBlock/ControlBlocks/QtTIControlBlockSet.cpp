@@ -59,7 +59,7 @@ bool QtTIControlBlockSet::isBlockCondEnd(const QString &blockCond)
 //!
 std::tuple<bool, QString, QString> QtTIControlBlockSet::evalBlock()
 {
-    QRegExp rx("(set\\s+([\\w]+)\\s{0,}\\=\\s{0,}([A-Za-z0-9_\\ \\+\\-\\%\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\!\\=\\<\\>\\(\\)\\&\\|\\^\\$\\\\\\@\\#\\%\\;\\~]+))");
+    QRegExp rx("(set\\s+([\\w]+)\\s{0,}\\=\\s{0,}([A-Za-z0-9_\\ \\+\\-\\%\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\!\\=\\<\\>\\(\\)\\&\\|\\^\\$\\\\\\@\\#\\%\\;\\~\\?]+))");
     if (rx.indexIn(_blockCond) != -1) {
         QString paramName = rx.cap(2).trimmed();
         QString paramExpr = rx.cap(3).trimmed();

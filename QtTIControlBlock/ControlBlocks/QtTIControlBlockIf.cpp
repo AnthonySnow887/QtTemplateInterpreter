@@ -1,6 +1,8 @@
 #include "QtTIControlBlockIf.h"
 #include "../QtTIControlBlockFabric.h"
 #include "../../QtTIParser/BracketsExpr/QtTIParserBracketsExpr.h"
+#include "../../QtTIParser/TernaryOperator/QtTIParserTernaryOperator.h"
+#include "../../QtTIParser/NullCoalescingOperator/QtTIParserNullCoalescingOperator.h"
 #include "../../QtTIParser/Logic/QtTIParserLogic.h"
 #include "../../QtTIParser/Math/QtTIParserMath.h"
 
@@ -219,6 +221,28 @@ std::tuple<bool, QVariant, QString> QtTIControlBlockIf::parseParamValue(const QS
 {
     if (str.isEmpty())
         return std::make_tuple(false, QVariant(), "Parse value failed (empty string passed)");
+
+    // ternary
+    if (QtTIParserTernaryOperator::isTernaryOperatorExpr(str)) {
+        bool isOk = false;
+        QString error;
+        QVariant result = QtTIParserTernaryOperator::parseTernaryOperator(str, parserArgs, parserFunc, &isOk, error);
+        if (!isOk)
+            return std::make_tuple(false, QVariant(), error);
+
+        return std::make_tuple(true, result, "");
+    }
+
+    // null-coalescing
+    if (QtTIParserNullCoalescingOperator::isNullCoalescingOperatorExpr(str)) {
+        bool isOk = false;
+        QString error;
+        QVariant result = QtTIParserNullCoalescingOperator::parseNullCoalescingOperator(str, parserArgs, parserFunc, &isOk, error);
+        if (!isOk)
+            return std::make_tuple(false, QVariant(), error);
+
+        return std::make_tuple(true, result, "");
+    }
 
     // logic
     if (QtTIParserLogic::isLogicExpr(str)) {
