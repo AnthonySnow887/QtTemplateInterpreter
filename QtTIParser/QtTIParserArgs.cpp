@@ -553,7 +553,7 @@ QVariant QtTIParserArgs::paramValueRecursive(const QString &key, const QVariant 
                 // eval needed method
                 QString funcName = rxFunc.cap(2).trimmed();
                 QVariantList funcArgs = parseHelpFunctionArgs(rxFunc.cap(3).trimmed());
-                tmpValue = evalParamMethod((void*)parent.data(), mObj, funcName, funcArgs);
+                tmpValue = evalParamMethod(const_cast<void*>(parent.data()), mObj, funcName, funcArgs);
             } else {
                 // search needed property
                 for (int i = mObj->propertyOffset(); i < mObj->propertyCount(); ++i) {
