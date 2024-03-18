@@ -12,7 +12,7 @@
 //!
 bool QtTIParserMath::isMathExpr(const QString &expr)
 {
-    QRegExp rx("^\\s{0,}([\\w\\.\\+\\-\\(\\) ]+)(\\s{0,}(\\+|-|/|//|%|\\*|\\*\\*)\\s{0,}([\\w\\.\\+\\-\\(\\) ]+)\\s{0,})+$");
+    QRegExp rx("^\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) ]+)(\\s{0,}(\\+|-|/|//|%|\\*|\\*\\*)\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) ]+)\\s{0,})+$");
     return (rx.indexIn(expr) != -1);
 }
 
@@ -108,7 +108,7 @@ QVariant QtTIParserMath::parseMathWithoutBrackets(const QString &expr, QtTIParse
     }
 
     QList<QtTIMathAction> actions;
-    QRegExp rxMath("\\s{0,}([\\w\\.\\+\\-]+)\\s{0,}(\\+|-|/|//|%|\\*|\\*\\*)\\s{0,}([\\w\\.\\+\\-]+)\\s{0,}");
+    QRegExp rxMath("\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) ]+)\\s{0,}(\\+|-|/|//|%|\\*|\\*\\*)\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) ]+)\\s{0,}");
     int pos = 0;
     while ((pos = rxMath.indexIn(expr, pos)) != -1) {
         pos += rxMath.matchedLength();

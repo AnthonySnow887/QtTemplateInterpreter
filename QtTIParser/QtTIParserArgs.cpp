@@ -311,7 +311,7 @@ QVariant QtTIParserArgs::prepareHelpFunctionArg(const QString &arg)
         return QVariant(tmpV);
     } else if (rxArray.indexIn(tmpArg) == 0) {
         QVariantList vList;
-        const QStringList arrayValues = prepareArrayValues(rxArray.cap(1).trimmed());
+        const QStringList arrayValues = prepareArrayValues(rxArray.cap(1).trimmed(), ',', true);
         for (const QString &v : arrayValues)
             vList.append(prepareHelpFunctionArg(v.trimmed()));
         return vList;
