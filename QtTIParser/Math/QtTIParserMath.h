@@ -23,6 +23,9 @@ private:
 
     static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseParamValue(const QString &str, QtTIParserArgs *parserArgs, QtTIParserFunc *parserFunc);
 
+    static int selectCalcType(const QVariant &left, const QVariant &right);
+    static ulong typeSize(const QVariant &value);
+
     static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> calcMathOperation(const QVariant &left, const QVariant &right, const QString &op);
 
     template<typename T>

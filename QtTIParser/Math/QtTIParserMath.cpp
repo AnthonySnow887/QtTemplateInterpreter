@@ -271,6 +271,56 @@ std::tuple<bool, QVariant, QString> QtTIParserMath::parseParamValue(const QStrin
 }
 
 //!
+//! \brief Select type for calc operation
+//! \param left
+//! \param right
+//! \return
+//!
+int QtTIParserMath::selectCalcType(const QVariant &left, const QVariant &right)
+{
+    const int lType = static_cast<int>(left.type());
+    const int rType = static_cast<int>(right.type());
+    const ulong lTypeSize = QtTIParserMath::typeSize(left);
+    const ulong rTypeSize = QtTIParserMath::typeSize(right);
+    int calcType = lType;
+    if (rTypeSize > lTypeSize) {
+        calcType = rType;
+    } else if (rTypeSize == lTypeSize
+               && rType != lType) {
+        if (rType == QVariant::Double
+            || rType == QMetaType::Float)
+            calcType = rType;
+    }
+    return calcType;
+}
+
+//!
+//! \brief Select value type size
+//! \param value
+//! \return
+//!
+ulong QtTIParserMath::typeSize(const QVariant &value)
+{
+    switch (static_cast<int>(value.type())) {
+        case QVariant::Int:
+            return sizeof (value.toInt());      // 4
+        case QVariant::UInt:
+            return sizeof (value.toUInt());     // 4
+        case QMetaType::Float:
+            return sizeof (value.toFloat());    // 4
+        case QVariant::Double:
+            return sizeof (value.toDouble());   // 8
+        case QVariant::LongLong:
+            return sizeof (value.toLongLong()); // 8
+        case QVariant::ULongLong:
+            return sizeof (value.toULongLong());// 8
+        default:
+            break;
+    }
+    return 0;
+}
+
+//!
 //! \brief Calculate math operation
 //! \param left
 //! \param right
@@ -291,7 +341,8 @@ std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation(const QVar
     if (!supTypes.contains(static_cast<int>(right.type())))
         return std::make_tuple(false, QVariant(), QString("Unsupported right value type '%1' for operator '%2'").arg(right.typeName()).arg(op));
 
-    switch (static_cast<int>(left.type())) {
+    const int cType = QtTIParserMath::selectCalcType(left, right);
+    switch (cType) {
         case QVariant::Int:
             return calcMathOperation_t_int<int>(left.toInt(), right.toInt(), op);
         case QVariant::UInt:
@@ -307,7 +358,7 @@ std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation(const QVar
         default:
             break;
     }
-    return std::make_tuple(false, QVariant(), QString("Unsupported value type '%1' for operator '%2'").arg(left.typeName()).arg(op));
+    return std::make_tuple(false, QVariant(), QString("Unsupported calc type '%1' for operator '%2'").arg(cType).arg(op));
 }
 
 //!
