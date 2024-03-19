@@ -18,13 +18,21 @@ class QtTIHelperFunctionArg
 public:
     QtTIHelperFunctionArg()
         : _typeId(qMetaTypeId<T>())
+    #if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
+        , _typeName(QMetaType::typeName(qMetaTypeId<T>()))
+    #else
         , _typeName(QMetaType(qMetaTypeId<T>()).name())
+    #endif
     {}
 
     QtTIHelperFunctionArg(const QVariant &data)
         : _data(toT(data))
         , _typeId(qMetaTypeId<T>())
+    #if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
+        , _typeName(QMetaType::typeName(qMetaTypeId<T>()))
+    #else
         , _typeName(QMetaType(qMetaTypeId<T>()).name())
+    #endif
     {}
 
     ~QtTIHelperFunctionArg()
