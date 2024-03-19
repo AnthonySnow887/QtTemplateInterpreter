@@ -119,7 +119,7 @@ QVariant QtTIParserLogic::parseLogicWithoutBrackets(const QString &expr,
 
     // check is math expr
     if (QtTIParserMath::isMathExpr(expr))
-        return QtTIParserMath::parseMath(expr, parserArgs, isOk, error);
+        return QtTIParserMath::parseMath(expr, parserArgs, parserFunc, isOk, error);
 
     // check is logic expr
     if (!QtTIParserLogic::isLogicExpr(expr)) {

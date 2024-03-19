@@ -259,7 +259,7 @@ std::tuple<bool, QVariant, QString> QtTIControlBlockIf::parseParamValue(const QS
     if (QtTIParserMath::isMathExpr(str)) {
         bool isOk = false;
         QString error;
-        QVariant result = QtTIParserMath::parseMath(str, parserArgs, &isOk, error);
+        QVariant result = QtTIParserMath::parseMath(str, parserArgs, parserFunc, &isOk, error);
         if (!isOk)
             return std::make_tuple(false, QVariant(), error);
 

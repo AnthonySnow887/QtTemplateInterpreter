@@ -1,5 +1,5 @@
 #include "QtTIParserMath.h"
-#include "QtTIMathAction.h"
+
 #include "../BracketsExpr/QtTIParserBracketsExpr.h"
 
 #include <QRegExp>
@@ -12,7 +12,7 @@
 //!
 bool QtTIParserMath::isMathExpr(const QString &expr)
 {
-    QRegExp rx("^\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) ]+)(\\s{0,}(\\+|-|/|//|%|\\*|\\*\\*)\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) ]+)\\s{0,})+$");
+    QRegExp rx("^\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) \\'\\\"\\[\\]\\{\\}\\:]+)(\\s{0,}(\\+|-|/|//|%|\\*|\\*\\*)\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) \\'\\\"\\[\\]\\{\\}\\:]+)\\s{0,})+$");
     return (rx.indexIn(expr) != -1);
 }
 
@@ -20,6 +20,7 @@ bool QtTIParserMath::isMathExpr(const QString &expr)
 //! \brief Parse math expression and calculate (with brackets)
 //! \param expr
 //! \param parserArgs
+//! \param parserFunc
 //! \param[in,out] isOk
 //! \param[in,out] error
 //! \return
@@ -52,7 +53,7 @@ bool QtTIParserMath::isMathExpr(const QString &expr)
 //!         {{ ( 10.5 + 2 * 2 ) / 3 + 10 - 1 + 2 ** 2 }} is 17.833333333333332
 //!         {{ ( 10.5 + 2 * (2 + 5)) / (3 + 10 * 2) - (1 + 2) ** 2 }} is -7.934782608695652
 //!
-QVariant QtTIParserMath::parseMath(const QString &expr, QtTIParserArgs *parserArgs, bool *isOk, QString &error)
+QVariant QtTIParserMath::parseMath(const QString &expr, QtTIParserArgs *parserArgs, QtTIParserFunc *parserFunc, bool *isOk, QString &error)
 {
     if (isOk)
         *isOk = false;
@@ -67,10 +68,10 @@ QVariant QtTIParserMath::parseMath(const QString &expr, QtTIParserArgs *parserAr
     }
 
     QStringList validStringsBeforeBracket({ "+", "-", "/", "%", "//", "*", "**" });
-    QtTIBracketsNode brNode = QtTIParserBracketsExpr::parseBracketsExpression(expr, validStringsBeforeBracket, parserArgs, [parserArgs](const QString &nodeBody) {
+    QtTIBracketsNode brNode = QtTIParserBracketsExpr::parseBracketsExpression(expr, validStringsBeforeBracket, parserArgs, [parserArgs, parserFunc](const QString &nodeBody) {
         bool isOk = false;
         QString error;
-        QVariant result = QtTIParserMath::parseMathWithoutBrackets(nodeBody, parserArgs, &isOk, error);
+        QVariant result = QtTIParserMath::parseMathWithoutBrackets(nodeBody, parserArgs, parserFunc, &isOk, error);
         return std::make_tuple(isOk, result, error);
     });
     if (!brNode.isValid()) {
@@ -89,11 +90,12 @@ QVariant QtTIParserMath::parseMath(const QString &expr, QtTIParserArgs *parserAr
 //! \brief Parse math expression without brackets and calculate
 //! \param expr
 //! \param parserArgs
+//! \param parserFunc
 //! \param[in,out] isOk
 //! \param[in,out] error
 //! \return
 //!
-QVariant QtTIParserMath::parseMathWithoutBrackets(const QString &expr, QtTIParserArgs *parserArgs, bool *isOk, QString &error)
+QVariant QtTIParserMath::parseMathWithoutBrackets(const QString &expr, QtTIParserArgs *parserArgs, QtTIParserFunc *parserFunc, bool *isOk, QString &error)
 {
     if (isOk)
         *isOk = false;
@@ -108,25 +110,13 @@ QVariant QtTIParserMath::parseMathWithoutBrackets(const QString &expr, QtTIParse
     }
 
     QList<QtTIMathAction> actions;
-    QRegExp rxMath("\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) ]+)\\s{0,}(\\+|-|/|//|%|\\*|\\*\\*)\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) ]+)\\s{0,}");
-    int pos = 0;
-    while ((pos = rxMath.indexIn(expr, pos)) != -1) {
-        pos += rxMath.matchedLength();
-        if (rxMath.captureCount() < 3)
-            continue;
-
-        QString condLeft = rxMath.cap(1);
-        QString condOp = rxMath.cap(2);
-        QString condRight = rxMath.cap(3);
-        QVariant condLeftVal = parserArgs->prepareHelpFunctionArg(condLeft.trimmed());
-        QVariant condRightVal = parserArgs->prepareHelpFunctionArg(condRight.trimmed());
-        actions.append(QtTIMathAction(condLeftVal, condRightVal, condOp));
-        // re-calculate pos
-        pos -= (condOp.size() + condRight.size());
-    }
+    bool parseIsOk = false;
+    parseLR(expr, &actions, parserArgs, parserFunc, &parseIsOk, error);
+    if (!parseIsOk)
+        return QVariant();
 
     // calc math operations
-    pos = 0;
+    int pos = 0;
     int opPriority = 0;
     while (true) {
         if (pos == actions.size()) {
@@ -173,6 +163,111 @@ QVariant QtTIParserMath::parseMathWithoutBrackets(const QString &expr, QtTIParse
     }
     error = QString("Incorrect execution of a math expression '%1'").arg(expr);
     return QVariant();
+}
+
+//!
+//! \brief Parse left and right values
+//! \param expr
+//! \param actions
+//! \param parserArgs
+//! \param parserFunc
+//! \param[in,out] isOk
+//! \param[in,out] error
+//!
+void QtTIParserMath::parseLR(const QString &expr, QList<QtTIMathAction> *actions, QtTIParserArgs *parserArgs, QtTIParserFunc *parserFunc, bool *isOk, QString &error)
+{
+    if (isOk)
+        *isOk = false;
+    error.clear();
+    QRegExp rxMath("\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) \\'\\\"\\[\\]\\{\\}\\:]+)\\s{0,}(\\+|-|/|//|%|\\*|\\*\\*)\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) \\'\\\"\\[\\]\\{\\}\\:]+)\\s{0,}");
+    if (rxMath.indexIn(expr, 0) != -1) {
+        if (rxMath.captureCount() < 3)
+            return;
+
+        QString condLeft = rxMath.cap(1);
+        QString condOp = rxMath.cap(2);
+        QString condRight = rxMath.cap(3);
+        QVariant condLeftVal;
+        QVariant condRightVal;
+        bool parseIsOk = false;
+        if (rxMath.indexIn(condLeft) != -1) {
+            parseLR(condLeft.trimmed(), actions, parserArgs, parserFunc, &parseIsOk, error);
+            if (!parseIsOk) {
+                error = QString("Parse condition left value failed (condition: '%1')!").arg(condLeft.trimmed());
+                return;
+            }
+            const int pos = actions->size() - 1;
+            if (pos < 0)
+                return;
+            condLeftVal = actions->at(pos).right();
+        } else {
+            std::tie(parseIsOk, condLeftVal, error) = QtTIParserMath::parseParamValue(condLeft.trimmed(), parserArgs, parserFunc);
+            if (!parseIsOk) {
+                error = QString("Parse condition left value failed (condition: '%1')!").arg(condLeft.trimmed());
+                return;
+            }
+        }
+
+        const int rPos = actions->size();
+        if (rxMath.indexIn(condRight) != -1) {
+            parseLR(condRight.trimmed(), actions, parserArgs, parserFunc, &parseIsOk, error);
+            if (!parseIsOk) {
+                error = QString("Parse condition right value failed (condition: '%1')!").arg(condRight.trimmed());
+                return;
+            }
+            if (rPos >= actions->size())
+                return;
+            condRightVal = actions->at(rPos).left();
+        } else {
+            std::tie(parseIsOk, condRightVal, error) = QtTIParserMath::parseParamValue(condRight.trimmed(), parserArgs, parserFunc);
+            if (!parseIsOk) {
+                error = QString("Parse condition right value failed (condition: '%1')!").arg(condRight.trimmed());
+                return;
+            }
+        }
+        actions->insert(rPos, QtTIMathAction(condLeftVal, condRightVal, condOp));
+        if (isOk)
+            *isOk = true;
+    }
+}
+
+//!
+//! \brief Parse parameter value from string
+//! \param str Parameter value string view
+//! \return
+//!
+std::tuple<bool, QVariant, QString> QtTIParserMath::parseParamValue(const QString &str, QtTIParserArgs *parserArgs, QtTIParserFunc *parserFunc)
+{
+    if (str.isEmpty())
+        return std::make_tuple(false, QVariant(), "Parse value failed (empty string passed)");
+
+    // math
+    if (QtTIParserMath::isMathExpr(str)) {
+        bool isOk = false;
+        QString error;
+        QVariant result = QtTIParserMath::parseMath(str, parserArgs, parserFunc, &isOk, error);
+        if (!isOk)
+            return std::make_tuple(false, QVariant(), error);
+
+        return std::make_tuple(true, result, "");
+    }
+
+    // function
+    QRegExp rxFunc("^(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*)");
+    if (rxFunc.indexIn(str) != -1) {
+        QString funcName = rxFunc.cap(2).trimmed();
+        QVariantList funcArgs = parserArgs->parseHelpFunctionArgs(rxFunc.cap(3).trimmed());
+        return parserFunc->evalHelpFunction(funcName, funcArgs);
+    }
+
+    // arg
+    QVariantList tmp = parserArgs->parseHelpFunctionArgs(str);
+    if (tmp.isEmpty())
+        return std::make_tuple(false, QVariant(), "Parse value failed");
+    if (tmp.size() > 1)
+        return std::make_tuple(false, QVariant(), "Parse value failed (more than one argument is given)");
+
+    return std::make_tuple(true, tmp[0], "");
 }
 
 //!

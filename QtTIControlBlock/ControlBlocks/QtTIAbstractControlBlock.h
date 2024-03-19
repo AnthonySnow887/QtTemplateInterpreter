@@ -282,7 +282,7 @@ protected:
         if (QtTIParserMath::isMathExpr(str)) {
             bool isOk = false;
             QString error;
-            QVariant result = QtTIParserMath::parseMath(str, parser()->parserArgs(), &isOk, error);
+            QVariant result = QtTIParserMath::parseMath(str, parser()->parserArgs(), parser()->parserFunc(), &isOk, error);
             if (!isOk)
                 return std::make_tuple(false, QVariant(), error);
 

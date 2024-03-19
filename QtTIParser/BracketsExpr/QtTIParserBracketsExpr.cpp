@@ -52,7 +52,12 @@ QtTIBracketsNode QtTIParserBracketsExpr::parseBracketsExpression(const QString &
             tmpValue.clear();
             continue;
         }
-        if (ch == ")" && !isEescaping && !isSkipped) {
+        if (ch == ")" && !isEescaping) {
+            if (isSkipped) {
+                tmpValue += ch;
+                isSkipped = false;
+                continue;
+            }
             QtTIBracketsNode closedNode = nodes[openBrackets];
             closedNode.appendBodyData(tmpValue);
             nodes.removeAt(openBrackets);

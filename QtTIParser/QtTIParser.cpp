@@ -358,7 +358,7 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpParams(const QString &line, 
         } else if (tagOpen != "#" && QtTIParserMath::isMathExpr(helpCondition)) {
             bool calcIsOk = false;
             QString calcErr;
-            QVariant calcRes = QtTIParserMath::parseMath(helpCondition, &_parserArgs, &calcIsOk, calcErr);
+            QVariant calcRes = QtTIParserMath::parseMath(helpCondition, &_parserArgs, &_parserFunc, &calcIsOk, calcErr);
             if (!calcIsOk) {
                 if (isOk)
                     *isOk = false;
