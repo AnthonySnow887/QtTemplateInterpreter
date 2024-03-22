@@ -123,7 +123,7 @@ std::tuple<bool, QString, QString> QtTemplateInterpreter::interpret(QString data
 
     QTextStream in(&data);
     int lineNum = 0;
-    bool isMultiline = false;
+    bool isMultilineComment = false;
     QtTIAbstractControlBlock *block = nullptr;
     QString unfinishedBlockCond;
     QString tmpData;
@@ -136,20 +136,17 @@ std::tuple<bool, QString, QString> QtTemplateInterpreter::interpret(QString data
         QString line = in.readLine() + lineEndAppender;
 
         // remove comments
-        line = _parser->removeComments(line, &isMultiline);
-        if (isMultiline)
-            continue;
-
-        bool isOk = false;
-        QString error;
+        line = _parser->removeComments(line, &isMultilineComment);
 
         // search block
+        bool isOk = false;
+        QString error;
         std::tie(isOk, line, block, unfinishedBlockCond, error) = _blockFabric->parseBlock(line, block, unfinishedBlockCond, lineNum);
         if (!isOk) {
             clear(block);
             return std::make_tuple(false, "", error);
         }
-        if (!unfinishedBlockCond.isEmpty())
+        if (!unfinishedBlockCond.isEmpty() || isMultilineComment)
             continue;
 
         // search params & functions
