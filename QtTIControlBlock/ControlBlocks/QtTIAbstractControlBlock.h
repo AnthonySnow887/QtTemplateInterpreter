@@ -312,7 +312,7 @@ protected:
         int n = 0;
         for (; n < str.size(); ++n) {
             if (!str.at(n).isSpace())
-                return str.right(n);
+                return str.right(str.size() - n);
         }
         return "";
     }
