@@ -553,7 +553,7 @@ QVariant QtTIParserArgs::paramValueRecursive(const QString &key, const QVariant 
                 // eval needed method
                 QString funcName = rxFunc.cap(2).trimmed();
                 QVariantList funcArgs = parseHelpFunctionArgs(rxFunc.cap(3).trimmed());
-                tmpValue = evalParamMethod(const_cast<void*>(parent.data()), mObj, funcName, funcArgs);
+                tmpValue = evalParamMethod(const_cast<void*>(parent.constData()), mObj, funcName, funcArgs);
             } else {
                 // search needed property
                 for (int i = mObj->propertyOffset(); i < mObj->propertyCount(); ++i) {
@@ -565,7 +565,7 @@ QVariant QtTIParserArgs::paramValueRecursive(const QString &key, const QVariant 
                                                      .arg(key));
                             return QVariant();
                         }
-                        tmpValue = mProp.readOnGadget(parent.data());
+                        tmpValue = mProp.readOnGadget(parent.constData());
                         break;
                     }
                 }
