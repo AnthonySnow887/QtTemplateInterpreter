@@ -41,10 +41,6 @@ void QtTIParserArgs::appendParam(const QString &paramName, const QVariant &value
                                  .arg(paramName));
         return;
     }
-    if (value.isNull() && value.type() != QVariant::Type::String)
-        qWarning() << qPrintable(QString("[QtTIParserArgs][appendParam] Param value is Null (key: \"%1\")!")
-                                 .arg(paramName));
-
     _params.insert(paramName, value);
 }
 
