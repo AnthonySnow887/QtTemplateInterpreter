@@ -3,7 +3,8 @@ DEPENDPATH += $$PWD/..
 
 QT += core
 CONFIG += c++14
-QMAKE_CXXFLAGS += -std=c++14
+equals(QMAKE_COMPILER, "gcc"): QMAKE_CXXFLAGS += -std=c++14
+equals(QMAKE_COMPILER, "msvc"): QMAKE_CXXFLAGS += /std:c++14
 
 HEADERS += \
     $$PWD/QtTIControlBlock/ControlBlocks/QtTIAbstractControlBlock.h \
