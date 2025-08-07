@@ -6,6 +6,7 @@
 
 QtTIParser::QtTIParser()
 {
+    _parserArgs.setTIParserFunc(&_parserFunc);
 }
 
 QtTIParser::~QtTIParser()

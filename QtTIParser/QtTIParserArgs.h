@@ -5,8 +5,13 @@
 #include <QString>
 #include <QVariant>
 
+class QtTIParser;
+class QtTIParserFunc;
+
 class QtTIParserArgs
 {
+    friend class QtTIParser;
+
 public:
     QtTIParserArgs() = default;
     ~QtTIParserArgs();
@@ -26,6 +31,11 @@ public:
     QVariantList parseHelpFunctionArgs(const QString &args, const QChar &delimiter = QChar(','));
     QVariant prepareHelpFunctionArg(const QString &arg);
 
+protected:
+    void setTIParserFunc(QtTIParserFunc *parserFunc) {
+        _parserFunc = parserFunc;
+    }
+
 private:
     QStringList prepareArrayValues(const QString &arrayStr, const QChar &delimiter = QChar(','), const bool addQuotes = false);
     QMap<QString, QString> prepareMapKeysValues(const QString &mapStr, const QChar &delimiter = QChar(','));
@@ -37,6 +47,7 @@ private:
     QVariant evalParamMethod(void *object, const QMetaObject *mObj, const QString &funcName, const QVariantList &funcArgs);
 
 private:
+    QtTIParserFunc *_parserFunc {nullptr};
     QHash<QString, QVariant> _params;
     QHash<QString, QVariant> _tmpParams;
 };

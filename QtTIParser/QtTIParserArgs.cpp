@@ -1,5 +1,6 @@
 #include "QtTIParserArgs.h"
 #include "../QtTIDefines/QtTIDefines.h"
+#include "../QtTIParser/QtTIParserFunc.h"
 #include "../QtTIHelperFunction/QtTIAbstractHelperFunction.h"
 
 #include <QDebug>
@@ -13,6 +14,7 @@ QtTIParserArgs::~QtTIParserArgs()
 {
     clearParams();
     clearTmpParams();
+    _parserFunc = nullptr;
 }
 
 //!
@@ -277,7 +279,7 @@ QVariant QtTIParserArgs::prepareHelpFunctionArg(const QString &arg)
     QRegExp rxDouble("^(\\+|\\-)?(d|f)?(\\d+\\.\\d+)$");
     QRegExp rxBool("^(true|false|True|False|TRUE|FALSE)$");
     QRegExp rxArray("^\\[(.*)\\]$");
-    QRegExp rxHash("^(m|h)?\\{(((.*)\\s*\\:\\s*(.*,?))*)\\}$");
+    QRegExp rxHash("^(m|h)?\\{(((.*)\\s*(\\:|\\=\\>)\\s*(.*,?))*)\\}$");
     if (rxStr.indexIn(tmpArg) == 0) {
         QString type = rxStr.cap(1);
         QString value = rxStr.cap(2);
@@ -334,6 +336,21 @@ QVariant QtTIParserArgs::prepareHelpFunctionArg(const QString &arg)
         return param(tmpArg);
     else if (hasTmpParam(tmpArg))
         return tmpParam(tmpArg);
+
+    // check is function
+    QRegExp rxFunc("^(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*)");
+    if (rxFunc.indexIn(tmpArg) != -1 && _parserFunc) {
+        QString funcName = rxFunc.cap(2).trimmed();
+        QVariantList funcArgs = parseHelpFunctionArgs(rxFunc.cap(3).trimmed());
+        bool isOk = false;
+        QString error;
+        QVariant result;
+        std::tie(isOk, result, error) = _parserFunc->evalHelpFunction(funcName, funcArgs);
+        if (!isOk)
+            return QVariant();
+
+        return result;
+    }
 
     // not found -> invalid
     return QVariant();
@@ -404,10 +421,13 @@ QStringList QtTIParserArgs::prepareArrayValues(const QString &arrayStr, const QC
 //!
 QMap<QString, QString> QtTIParserArgs::prepareMapKeysValues(const QString &mapStr, const QChar &delimiter)
 {
+    QRegExp rxHash("\\s*(\\:|\\=\\>)\\s*");
     const QStringList tmpList = prepareArrayValues(mapStr, delimiter, true);
     QMap<QString, QString> tmpMap;
     for (const QString &v : tmpList) {
-        QPair<QString, QString> keyValue = prepareMapKeyValue(v.trimmed());
+        if (rxHash.indexIn(v) == -1)
+            continue;
+        QPair<QString, QString> keyValue = prepareMapKeyValue(v.trimmed(), rxHash.cap(1));
         tmpMap.insert(keyValue.first, keyValue.second);
     }
     return tmpMap;
