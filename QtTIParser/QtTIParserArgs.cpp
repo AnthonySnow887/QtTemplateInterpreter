@@ -10,6 +10,15 @@
 #include <QMetaMethod>
 
 
+QtTIParserArgs::QtTIParserArgs()
+{
+}
+
+QtTIParserArgs::QtTIParserArgs(QtTIParserFunc *parserFunc)
+{
+    setTIParserFunc(parserFunc);
+}
+
 QtTIParserArgs::~QtTIParserArgs()
 {
     clearParams();

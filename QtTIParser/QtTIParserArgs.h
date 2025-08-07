@@ -13,7 +13,8 @@ class QtTIParserArgs
     friend class QtTIParser;
 
 public:
-    QtTIParserArgs() = default;
+    QtTIParserArgs();
+    QtTIParserArgs(QtTIParserFunc *parserFunc);
     ~QtTIParserArgs();
 
     void appendParam(const QString &paramName, const QVariant &value);

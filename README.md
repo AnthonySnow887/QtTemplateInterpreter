@@ -627,6 +627,22 @@ The following literals exist:
 - ```{"foo": "bar"}``` - QVariantMap are defined by a list of keys and values separated by a comma ``` , ``` and wrapped with curly braces ``` {} ```:
 - ```true / false``` - true represents the true value, false represents the false value.
 
+>
+> NOTE:
+>
+> To create a QVariantMap array, you can use the colon character ``` : ``` or the right arrows ``` => ``` to separate the key and its value.
+> These characters can also appear simultaneously in the same array.
+>
+> Example 1:
+> ```{"foo": "bar", "abc": 123}```
+>
+> Example 2:
+> ```{"foo" => "bar", "abc" => 123}```
+>
+> Example 3:
+> ```{"foo": "bar", "abc" => 123}```
+>
+
 The interpreter also allows you to more strictly specify the types of variables:
 - ```int``` : 123 / +123 / -123 / i123 / +i123 / -i123
 - ```uint``` : ui123
@@ -1301,6 +1317,14 @@ Most of these classes require variable and function container classes:
 - ```QtTIParserFunc``` - function container class
 
 Therefore, in the case of using separate parser classes, you should create container classes yourself, and register user variables and functions in them.
+
+>
+> NOTE:
+>
+> The QtTIParserArgs class has the ability to parse input functions as arguments.
+> To do this, use the QtTIParserArgs(QtTIParserFunc *parserFunc) constructor.
+> If QtTIParserArgs does not have a QtTIParserFunc pointer, parsing functions as arguments to other functions will be ignored!
+>
 
 Examples:
 
