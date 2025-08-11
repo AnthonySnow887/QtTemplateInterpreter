@@ -14,6 +14,7 @@ HEADERS += \
     $$PWD/QtTIControlBlock/ControlBlocks/QtTIControlBlockUnset.h \
     $$PWD/QtTIControlBlock/QtTIControlBlockFabric.h \
     $$PWD/QtTIDefines/QtTIDefines.h \
+    $$PWD/QtTIDefines/QtTIRegExpDefines.h \
     $$PWD/QtTIHelperFunction/QtTIAbstractHelperFunction.h \
     $$PWD/QtTIHelperFunction/QtTIHelperFunction.h \
     $$PWD/QtTIHelperFunction/QtTIHelperFunctionArg.h \

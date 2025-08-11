@@ -1102,8 +1102,8 @@ std::tuple<bool, QVariant, QString> QtTIParserFunc::evalHelpFunction(const QStri
         return std::make_tuple(false,
                                QVariant(),
                                QString("Not found help function '%1 (%2)'")
-                               .arg(funcName)
-                               .arg(QtTIAbstractHelperFunction::typesToStr(QtTIAbstractHelperFunction::vListArgsTypes(args))));
+                               .arg(funcName,
+                                    QtTIAbstractHelperFunction::typesToStr(QtTIAbstractHelperFunction::vListArgsTypes(args))));
 
     return f->evalFunction(args);
 }

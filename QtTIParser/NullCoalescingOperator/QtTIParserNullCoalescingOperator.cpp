@@ -2,6 +2,7 @@
 #include "../BracketsExpr/QtTIParserBracketsExpr.h"
 #include "../Logic/QtTIParserLogic.h"
 #include "../Math/QtTIParserMath.h"
+#include "../../QtTIDefines/QtTIRegExpDefines.h"
 #include <QRegExp>
 
 //!
@@ -11,7 +12,7 @@
 //!
 bool QtTIParserNullCoalescingOperator::isNullCoalescingOperatorExpr(const QString &expr)
 {
-    QRegExp rx("^\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{1,}\\?\\?\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{0,}$");
+    QRegExp rx(RX_NULL_COALESCING);
     return (rx.indexIn(expr) != -1);
 }
 
@@ -59,7 +60,7 @@ QVariant QtTIParserNullCoalescingOperator::parseNullCoalescingOperator(const QSt
         return QVariant();
     }
 
-    QRegExp rx("^\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{1,}\\?\\?\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{0,}$");
+    QRegExp rx(RX_NULL_COALESCING);
     if (rx.indexIn(expr) != -1) {
         QString ternCond = rx.cap(1).trimmed();
         QString ternCondFalse = rx.cap(2).trimmed();
@@ -153,7 +154,7 @@ std::tuple<bool, QVariant, QString> QtTIParserNullCoalescingOperator::parseParam
     }
 
     // function
-    QRegExp rxFunc("^(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*)");
+    QRegExp rxFunc(RX_FUNC);
     if (rxFunc.indexIn(str) != -1) {
         QString funcName = rxFunc.cap(2).trimmed();
         QVariantList funcArgs = parserArgs->parseHelpFunctionArgs(rxFunc.cap(3).trimmed());

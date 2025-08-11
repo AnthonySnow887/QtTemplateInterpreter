@@ -1,6 +1,7 @@
 #include "QtTIParserMath.h"
 
 #include "../BracketsExpr/QtTIParserBracketsExpr.h"
+#include "../../QtTIDefines/QtTIRegExpDefines.h"
 
 #include <QRegExp>
 #include <qmath.h>
@@ -12,7 +13,7 @@
 //!
 bool QtTIParserMath::isMathExpr(const QString &expr)
 {
-    QRegExp rx("^\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) \\'\\\"\\[\\]\\{\\}\\:]+)(\\s{0,}(\\+|-|/|//|%|\\*|\\*\\*)\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) \\'\\\"\\[\\]\\{\\}\\:]+)\\s{0,})+$");
+    QRegExp rx(RX_MATH_OP);
     return (rx.indexIn(expr) != -1);
 }
 
@@ -179,7 +180,7 @@ void QtTIParserMath::parseLR(const QString &expr, QList<QtTIMathAction> *actions
     if (isOk)
         *isOk = false;
     error.clear();
-    QRegExp rxMath("\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) \\'\\\"\\[\\]\\{\\}\\:]+)\\s{0,}(\\+|-|/|//|%|\\*|\\*\\*)\\s{0,}([\\w\\_\\.\\,\\+\\-\\(\\) \\'\\\"\\[\\]\\{\\}\\:]+)\\s{0,}");
+    QRegExp rxMath(RX_MATH_OP_SEARCH);
     if (rxMath.indexIn(expr, 0) != -1) {
         if (rxMath.captureCount() < 3)
             return;
@@ -253,7 +254,7 @@ std::tuple<bool, QVariant, QString> QtTIParserMath::parseParamValue(const QStrin
     }
 
     // function
-    QRegExp rxFunc("^(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*)");
+    QRegExp rxFunc(RX_FUNC);
     if (rxFunc.indexIn(str) != -1) {
         QString funcName = rxFunc.cap(2).trimmed();
         QVariantList funcArgs = parserArgs->parseHelpFunctionArgs(rxFunc.cap(3).trimmed());
@@ -337,9 +338,9 @@ std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation(const QVar
                          QVariant::ULongLong});
 
     if (!supTypes.contains(static_cast<int>(left.type())))
-        return std::make_tuple(false, QVariant(), QString("Unsupported left value type '%1' for operator '%2'").arg(left.typeName()).arg(op));
+        return std::make_tuple(false, QVariant(), QString("Unsupported left value type '%1' for operator '%2'").arg(left.typeName(), op));
     if (!supTypes.contains(static_cast<int>(right.type())))
-        return std::make_tuple(false, QVariant(), QString("Unsupported right value type '%1' for operator '%2'").arg(right.typeName()).arg(op));
+        return std::make_tuple(false, QVariant(), QString("Unsupported right value type '%1' for operator '%2'").arg(right.typeName(), op));
 
     const int cType = QtTIParserMath::selectCalcType(left, right);
     switch (cType) {

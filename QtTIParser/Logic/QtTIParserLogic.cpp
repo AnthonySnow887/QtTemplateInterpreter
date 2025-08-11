@@ -1,6 +1,7 @@
 #include "QtTIParserLogic.h"
 #include "../BracketsExpr/QtTIParserBracketsExpr.h"
 #include "../Math/QtTIParserMath.h"
+#include "../../QtTIDefines/QtTIRegExpDefines.h"
 #include <QRegExp>
 
 //!
@@ -10,8 +11,8 @@
 //!
 bool QtTIParserLogic::isLogicExpr(const QString &expr)
 {
-    QRegExp rx("^(?!'|\")\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!]+)(\\s{1,}(and|or|&&|\\|\\||not)\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!]+)\\s{0,})+(?!'|\")$");
-    QRegExp rx_2("^(?!'|\")\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:]+)(\\s{1,}([\\<\\>\\=\\!]+)\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:]+)\\s{0,})+(?!'|\")$");
+    QRegExp rx(RX_LOGIC_v1);
+    QRegExp rx_2(RX_LOGIC_v2);
     return ((rx.indexIn(expr) != -1)
             || (rx_2.indexIn(expr) != -1));
 }
@@ -208,8 +209,8 @@ std::tuple<bool, bool, QString> QtTIParserLogic::compareExpression(const QString
                                                                    QtTIParserArgs *parserArgs,
                                                                    QtTIParserFunc *parserFunc)
 {
-    QRegExp rxLeftRight("((not\\s+)?([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\(\\)]*)\\s+([\\<\\>\\=\\!]+)\\s+([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\(\\)]*))");
-    QRegExp rxOne("((not\\s+)?([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\(\\)]*))");
+    QRegExp rxLeftRight(RX_LOGIC_LEFT_RIGHT);
+    QRegExp rxOne(RX_LOGIC_ONE);
     if (rxLeftRight.indexIn(str) != -1) {
         QString notVal = rxLeftRight.cap(2).trimmed();
         QString left = rxLeftRight.cap(3).trimmed();
@@ -276,7 +277,7 @@ std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> QtTIParserLogic::parsePa
         return std::make_tuple(false, QVariant(), "Parse value failed (empty string passed)");
 
     // function
-    QRegExp rxFunc("^(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*)");
+    QRegExp rxFunc(RX_FUNC);
     if (rxFunc.indexIn(str) != -1) {
         QString funcName = rxFunc.cap(2).trimmed();
         QVariantList funcArgs = parserArgs->parseHelpFunctionArgs(rxFunc.cap(3).trimmed());

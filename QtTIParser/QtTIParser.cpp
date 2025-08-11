@@ -3,6 +3,7 @@
 #include "Logic/QtTIParserLogic.h"
 #include "TernaryOperator/QtTIParserTernaryOperator.h"
 #include "NullCoalescingOperator/QtTIParserNullCoalescingOperator.h"
+#include "../QtTIDefines/QtTIRegExpDefines.h"
 
 QtTIParser::QtTIParser()
 {
@@ -145,8 +146,7 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpFunctions(const QString &lin
 {
     error.clear();
     QMap<QString, QVariant> tmpRes;
-    QString tmpLine = line;
-    QRegExp rxFunc("(\\{([\\{\\#])\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*([\\}\\#])\\})");
+    QRegExp rxFunc(RX_BLOCK_FUNC);
     int pos = 0;
     while ((pos = rxFunc.indexIn(line, pos)) != -1) {
         pos += rxFunc.matchedLength();
@@ -174,8 +174,8 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpFunctions(const QString &lin
             if (isOk)
                 *isOk = false;
             error = QString("Unsupported help function '%1 (%2)' in line %3")
-                    .arg(helpFunc)
-                    .arg(QtTIAbstractHelperFunction::typesToStr(QtTIAbstractHelperFunction::vListArgsTypes(helpFuncArgs)))
+                    .arg(helpFunc,
+                         QtTIAbstractHelperFunction::typesToStr(QtTIAbstractHelperFunction::vListArgsTypes(helpFuncArgs)))
                     .arg(lineNum);
             return QMap<QString, QVariant>();
         }
@@ -190,8 +190,8 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpFunctions(const QString &lin
                 if (isOk)
                     *isOk = false;
                 error = QString("Eval help function '%1 (%2)' in line %3 failed! Error: '%4'")
-                        .arg(helpFunc)
-                        .arg(QtTIAbstractHelperFunction::typesToStr(QtTIAbstractHelperFunction::vListArgsTypes(helpFuncArgs)))
+                        .arg(helpFunc,
+                             QtTIAbstractHelperFunction::typesToStr(QtTIAbstractHelperFunction::vListArgsTypes(helpFuncArgs)))
                         .arg(lineNum)
                         .arg(err);
                 return QMap<QString, QVariant>();
@@ -284,8 +284,8 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpParams(const QString &line, 
 {
     error.clear();
     QMap<QString, QVariant> tmpRes;
-    QRegExp rx("(\\{([\\{\\#])\\s{0,}([\\w\\.\\,\\ \\+\\-\\/\\*\\%\\?\\:\\'\\\"\\(\\)\\[\\]\\{\\}\\<\\>\\=\\!\\&\\|\\^\\$\\\\]+)\\s{0,}([\\}\\#])\\})");
-    QRegExp rxParam("\\s{0,}([\\w\\.]+)\\s{0,}");
+    QRegExp rx(RX_BLOCK_PARAMS);
+    QRegExp rxParam(RX_PARAM);
     int pos = 0;
     while ((pos = rx.indexIn(line, pos)) != -1) {
         pos += rx.matchedLength();

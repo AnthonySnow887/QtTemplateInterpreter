@@ -2,6 +2,7 @@
 #include "../BracketsExpr/QtTIParserBracketsExpr.h"
 #include "../Logic/QtTIParserLogic.h"
 #include "../Math/QtTIParserMath.h"
+#include "../../QtTIDefines/QtTIRegExpDefines.h"
 #include <QRegExp>
 
 //!
@@ -11,9 +12,9 @@
 //!
 bool QtTIParserTernaryOperator::isTernaryOperatorExpr(const QString &expr)
 {
-    QRegExp rx("^\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{1,}\\?\\s{1,}(([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{1,}\\:\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{0,})$");
-    QRegExp rx_2("^\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{1,}\\?\\:\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{0,}$");
-    QRegExp rx_3("^\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{1,}\\?\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{0,}$");
+    QRegExp rx(RX_TERNARY_v1);
+    QRegExp rx_2(RX_TERNARY_v2);
+    QRegExp rx_3(RX_TERNARY_v3);
     return ((rx.indexIn(expr) != -1)
             || (rx_2.indexIn(expr) != -1)
             || (rx_3.indexIn(expr) != -1));
@@ -70,9 +71,9 @@ QVariant QtTIParserTernaryOperator::parseTernaryOperator(const QString &expr,
         return QVariant();
     }
 
-    QRegExp rx("^\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{1,}\\?\\s{1,}(([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{1,}\\:\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{0,})$");
-    QRegExp rx_2("^\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{1,}\\?\\:\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{0,}$");
-    QRegExp rx_3("^\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{1,}\\?\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{0,}$");
+    QRegExp rx(RX_TERNARY_v1);
+    QRegExp rx_2(RX_TERNARY_v2);
+    QRegExp rx_3(RX_TERNARY_v3);
 
     // check conditions
     if (rx.indexIn(expr) != -1) {
@@ -282,7 +283,7 @@ std::tuple<bool, QVariant, QString> QtTIParserTernaryOperator::parseParamValue(c
     }
 
     // function
-    QRegExp rxFunc("^(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*)");
+    QRegExp rxFunc(RX_FUNC);
     if (rxFunc.indexIn(str) != -1) {
         QString funcName = rxFunc.cap(2).trimmed();
         QVariantList funcArgs = parserArgs->parseHelpFunctionArgs(rxFunc.cap(3).trimmed());

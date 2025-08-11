@@ -39,7 +39,7 @@ QString QtTIControlBlockUnset::blockCondition() const
 //!
 bool QtTIControlBlockUnset::isBlockCondStart(const QString &blockCond)
 {
-    QRegExp rx("(unset\\s+([\\w]+))");
+    QRegExp rx(RX_CONTROL_BLOCK_UNSET);
     return (rx.indexIn(blockCond) != -1);
 }
 
@@ -59,7 +59,7 @@ bool QtTIControlBlockUnset::isBlockCondEnd(const QString &blockCond)
 //!
 std::tuple<bool, QString, QString> QtTIControlBlockUnset::evalBlock()
 {
-    QRegExp rx("(unset\\s+([\\w]+))");
+    QRegExp rx(RX_CONTROL_BLOCK_UNSET);
     if (rx.indexIn(_blockCond) != -1) {
         QString paramName = rx.cap(2).trimmed();
         // check

@@ -12,6 +12,7 @@
 #include "../../QtTIParser/NullCoalescingOperator/QtTIParserNullCoalescingOperator.h"
 #include "../../QtTIParser/Logic/QtTIParserLogic.h"
 #include "../../QtTIParser/Math/QtTIParserMath.h"
+#include "../../QtTIDefines/QtTIRegExpDefines.h"
 
 //!
 //! \brief The QtTIAbstractControlBlock class
@@ -290,7 +291,7 @@ protected:
         }
 
         // function
-        QRegExp rxFunc("^(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*)");
+        QRegExp rxFunc(RX_FUNC);
         if (rxFunc.indexIn(str) != -1) {
             QString funcName = rxFunc.cap(2).trimmed();
             QVariantList funcArgs = parser()->parserArgs()->parseHelpFunctionArgs(rxFunc.cap(3).trimmed());

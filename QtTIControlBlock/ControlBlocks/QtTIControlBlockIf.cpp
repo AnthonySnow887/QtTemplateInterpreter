@@ -46,8 +46,8 @@ QString QtTIControlBlockIf::blockCondition() const
 //!
 bool QtTIControlBlockIf::isBlockCondStart(const QString &blockCond)
 {
-    QRegExp rx("(if\\s+(.*))");
-    QRegExp rxElseIf("(\\s{0,}elseif\\s+(.*))");
+    QRegExp rx(RX_CONTROL_BLOCK_IF_START);
+    QRegExp rxElseIf(RX_CONTROL_BLOCK_ELSE_IF_START);
     return ((rx.indexIn(blockCond) != -1)
             && (rxElseIf.indexIn(blockCond) == -1));
 }
@@ -59,10 +59,10 @@ bool QtTIControlBlockIf::isBlockCondStart(const QString &blockCond)
 //!
 bool QtTIControlBlockIf::isBlockCondIntermediate(const QString &blockCond)
 {
-    QRegExp rxElseIf("(\\s{0,}elseif\\s+(.*))");
+    QRegExp rxElseIf(RX_CONTROL_BLOCK_ELSE_IF_START);
     if ((rxElseIf.indexIn(blockCond) != -1) && _elseCond.isEmpty())
         return true;
-    QRegExp rxElse("^(else)$");
+    QRegExp rxElse(RX_CONTROL_BLOCK_ELSE);
     if (rxElse.indexIn(blockCond) != -1 && _elseCond.isEmpty())
         return true;
     return false;
@@ -74,14 +74,14 @@ bool QtTIControlBlockIf::isBlockCondIntermediate(const QString &blockCond)
 //!
 void QtTIControlBlockIf::appendBlockCondIntermediate(const QString &blockCond)
 {
-    QRegExp rxElseIf("(\\s{0,}elseif\\s+(.*))");
+    QRegExp rxElseIf(RX_CONTROL_BLOCK_ELSE_IF_START);
     if (rxElseIf.indexIn(blockCond) != -1) {
         _elseIfConds.append(blockCond);
         _elseIfBodys.append(QMap<int,QString>());
         _bodyPos = BodyPosition::ElseIf;
         return;
     }
-    QRegExp rxElse("^(else)$");
+    QRegExp rxElse(RX_CONTROL_BLOCK_ELSE);
     if (rxElse.indexIn(blockCond) != -1) {
         _elseCond = blockCond;
         _bodyPos = BodyPosition::Else;
@@ -96,7 +96,7 @@ void QtTIControlBlockIf::appendBlockCondIntermediate(const QString &blockCond)
 //!
 bool QtTIControlBlockIf::isBlockCondEnd(const QString &blockCond)
 {
-    QRegExp rx("^(endif)$");
+    QRegExp rx(RX_CONTROL_BLOCK_IF_END);
     return (rx.indexIn(blockCond) != -1);
 }
 
@@ -107,7 +107,7 @@ bool QtTIControlBlockIf::isBlockCondEnd(const QString &blockCond)
 std::tuple<bool, QString, QString> QtTIControlBlockIf::evalBlock()
 {
     // check IF
-    QRegExp rxIf("(if\\s+(.*))");
+    QRegExp rxIf(RX_CONTROL_BLOCK_IF_START);
     if (rxIf.indexIn(_ifCond) != -1) {
         QString ifConf = rxIf.cap(2).trimmed();
         bool isOk = false;
@@ -132,7 +132,7 @@ std::tuple<bool, QString, QString> QtTIControlBlockIf::evalBlock()
             const QString elseIfCond = _elseIfConds[i];
             const QMap<int,QString> elseIfBody = _elseIfBodys[i];
             // check IF
-            QRegExp rxElseIf("(\\s{0,}elseif\\s+(.*))");
+            QRegExp rxElseIf(RX_CONTROL_BLOCK_ELSE_IF_START);
             if (rxElseIf.indexIn(elseIfCond) != -1) {
                 QString ifConf = rxElseIf.cap(2).trimmed();
                 bool isOk = false;
@@ -152,7 +152,7 @@ std::tuple<bool, QString, QString> QtTIControlBlockIf::evalBlock()
     }
 
     // check ELSE
-    QRegExp rxElse("(\\s{0,}else\\s{0,})");
+    QRegExp rxElse(RX_CONTROL_BLOCK_ELSE);
     if (rxElse.indexIn(_elseCond) != -1)
         return buildBlockBody(_elseBody);
 
@@ -273,7 +273,7 @@ std::tuple<bool, QVariant, QString> QtTIControlBlockIf::parseParamValue(const QS
         tmpStr = rx.cap(1);
 
     // function
-    QRegExp rxFunc("^(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\(\\)\\:\\/\\^\\$\\\\\\@\\#\\!\\<\\>\\=\\&\\%\\|\\;\\~]*)\\s*\\)\\s*)");
+    QRegExp rxFunc(RX_FUNC);
     if (rxFunc.indexIn(tmpStr) != -1) {
         QString funcName = rxFunc.cap(2).trimmed();
         QVariantList funcArgs = parserArgs->parseHelpFunctionArgs(rxFunc.cap(3).trimmed());

@@ -43,7 +43,7 @@ QString QtTIControlBlockFor::blockCondition() const
 //!
 bool QtTIControlBlockFor::isBlockCondStart(const QString &blockCond)
 {
-    QRegExp rx("^(for\\s+([A-Za-z0-9_\\ \\,]+)\\s+in\\s+([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\(\\)]+))");
+    QRegExp rx(RX_CONTROL_BLOCK_FOR_START);
     return (rx.indexIn(blockCond) != -1);
 }
 
@@ -54,7 +54,8 @@ bool QtTIControlBlockFor::isBlockCondStart(const QString &blockCond)
 //!
 bool QtTIControlBlockFor::isBlockCondEnd(const QString &blockCond)
 {
-    QRegExp rx("^(endfor)$");
+//    QRegExp rx("^(endfor)$");
+    QRegExp rx(RX_CONTROL_BLOCK_FOR_END);
     return (rx.indexIn(blockCond) != -1);
 }
 
@@ -73,7 +74,7 @@ void QtTIControlBlockFor::appendBlockBody(const QString &blockBody, const int li
 //!
 std::tuple<bool, QString, QString> QtTIControlBlockFor::evalBlock()
 {
-    QRegExp rx("^(for\\s+([A-Za-z0-9_\\ \\,]+)\\s+in\\s+([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\(\\)]+))");
+    QRegExp rx(RX_CONTROL_BLOCK_FOR_START);
     if (rx.indexIn(_blockCond) != -1) {
         const QStringList paramNames = rx.cap(2).trimmed().split(",");
 
