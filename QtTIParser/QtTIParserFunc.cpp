@@ -980,6 +980,38 @@ QtTIParserFunc::QtTIParserFunc()
     appendHelpFunction(new QtTIHelperFunction<QString,int>("str_to_ulong_long", [](const QString &value, const int base) {
         return value.toULongLong(nullptr, base);
     }));
+
+    //
+    // Escape special symbols in object and return copy of the object.
+    // Special symbols:
+    // - {{ ... }}  ->  \{\{ ... \}\}
+    // - {% ... %}  ->  \{\% ... \%\}
+    // - {# ... #}  ->  \{\# ... \#\}
+    //
+    // [object] escape_special_block (object)
+    //
+    // === Supported object:
+    //      - QByteArray
+    //      - QString
+    //
+    appendHelpFunction(new QtTIHelperFunction<QByteArray>("escape_special_block", [](const QByteArray &d) {
+        QByteArray tmp(d);
+        return tmp.replace("{{", "\\{\\{")
+                  .replace("}}", "\\}\\}")
+                  .replace("{%", "\\{\\%")
+                  .replace("%}", "\\%\\}")
+                  .replace("{#", "\\{\\#")
+                  .replace("#}", "\\#\\}");
+    }));
+    appendHelpFunction(new QtTIHelperFunction<QString>("escape_special_block", [](const QString &d) {
+        QString tmp(d);
+        return tmp.replace("{{", "\\{\\{")
+                  .replace("}}", "\\}\\}")
+                  .replace("{%", "\\{\\%")
+                  .replace("%}", "\\%\\}")
+                  .replace("{#", "\\{\\#")
+                  .replace("#}", "\\#\\}");
+    }));
 }
 
 QtTIParserFunc::~QtTIParserFunc()

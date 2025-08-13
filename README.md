@@ -115,6 +115,18 @@ Bryu images:
 There are two types of delimiters: ```{% ... %}``` and ```{{ ... }}```.
 The first is used to perform various block operations, such as a for loop. The second one prints the result of the expression.
 
+>
+> NOTE:
+>
+> If you want a block to not be executed and remain unchanged, you should specify the ``` rv ``` directive before the block:
+>
+> ```twig
+> rv{{ my_function() }} -> print {{ my_function() }}
+> rv{{ my_value }}      -> print {{ my_value }}
+> rv{{ my_value.item }} -> print {{ my_value.item }}
+> ```
+>
+
 ## Variables
 
 All parameters inside the interpreter are stored in the QVariant class.
@@ -434,6 +446,7 @@ List of basic functions that are implemented in the interpreter:
 - ```[ulong] str_to_ulong(value, base)``` - convert string to ULong (value - QString, base - int - base, which is must be between 2 and 36, or 0). Returns 0 if the conversion fails.
 - ```[longlong] str_to_long_long(value, base)``` - convert string to LongLong (value - QString, base - int - base, which is must be between 2 and 36, or 0). Returns 0 if the conversion fails.
 - ```[ulonglong] str_to_ulong_long(value, base)``` - convert string to ULongLong (value - QString, base - int - base, which is must be between 2 and 36, or 0). Returns 0 if the conversion fails.
+- ```[object] escape_special_block (object)``` - escape special characters of control blocks (```{{ ... }} -> \{\{ ... \}\}; {% ... %} -> \{\% ... \%\}; {# ... #} -> \{\# ... \#\}```). Supported object: QByteArray, QString.
 
 Example of calling a function and getting its result:
 ```twig

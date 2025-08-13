@@ -153,48 +153,53 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpFunctions(const QString &lin
         if (rxFunc.captureCount() < 5)
             continue;
         QString replaceStr = rxFunc.cap(1);
-        QString tagOpen = rxFunc.cap(2);
-        QString helpFunc = rxFunc.cap(3);
-        QVariantList helpFuncArgs = _parserArgs.parseHelpFunctionArgs(rxFunc.cap(4));
-        QString tagClose = rxFunc.cap(5);
-        // check
-        if (tagOpen == "{" && tagClose != "}") {
-            if (isOk)
-                *isOk = false;
-            error = QString("Invalid closed symbol (not '}') in line %1").arg(lineNum);
-            return QMap<QString, QVariant>();
-        }
-        if (tagOpen == "#" && tagClose != "#") {
-            if (isOk)
-                *isOk = false;
-            error = QString("Invalid closed symbol (not '#') in line %1").arg(lineNum);
-            return QMap<QString, QVariant>();
-        }
-        if (!_parserFunc.hasHelpFunction(helpFunc, helpFuncArgs)) {
-            if (isOk)
-                *isOk = false;
-            error = QString("Unsupported help function '%1 (%2)' in line %3")
-                    .arg(helpFunc,
-                         QtTIAbstractHelperFunction::typesToStr(QtTIAbstractHelperFunction::vListArgsTypes(helpFuncArgs)))
-                    .arg(lineNum);
-            return QMap<QString, QVariant>();
-        }
+        const bool isRawValue = rxFunc.cap(2) == "rv";
         QVariant funcRes;
-        if (tagOpen != "#") {
-            bool isOkEval = false;
-            QString err;
-            std::tie(isOkEval, funcRes, err) = evalHelpFunction(helpFunc, helpFuncArgs);
-
+        if (isRawValue) {
+            funcRes = QString(replaceStr).remove(0, 2);
+        } else {
+            QString tagOpen = rxFunc.cap(3);
+            QString helpFunc = rxFunc.cap(4);
+            QVariantList helpFuncArgs = _parserArgs.parseHelpFunctionArgs(rxFunc.cap(5));
+            QString tagClose = rxFunc.cap(6);
             // check
-            if (!isOkEval) {
+            if (tagOpen == "{" && tagClose != "}") {
                 if (isOk)
                     *isOk = false;
-                error = QString("Eval help function '%1 (%2)' in line %3 failed! Error: '%4'")
+                error = QString("Invalid closed symbol (not '}') in line %1").arg(lineNum);
+                return QMap<QString, QVariant>();
+            }
+            if (tagOpen == "#" && tagClose != "#") {
+                if (isOk)
+                    *isOk = false;
+                error = QString("Invalid closed symbol (not '#') in line %1").arg(lineNum);
+                return QMap<QString, QVariant>();
+            }
+            if (!_parserFunc.hasHelpFunction(helpFunc, helpFuncArgs)) {
+                if (isOk)
+                    *isOk = false;
+                error = QString("Unsupported help function '%1 (%2)' in line %3")
                         .arg(helpFunc,
                              QtTIAbstractHelperFunction::typesToStr(QtTIAbstractHelperFunction::vListArgsTypes(helpFuncArgs)))
-                        .arg(lineNum)
-                        .arg(err);
+                        .arg(lineNum);
                 return QMap<QString, QVariant>();
+            }
+            if (tagOpen != "#") {
+                bool isOkEval = false;
+                QString err;
+                std::tie(isOkEval, funcRes, err) = evalHelpFunction(helpFunc, helpFuncArgs);
+
+                // check
+                if (!isOkEval) {
+                    if (isOk)
+                        *isOk = false;
+                    error = QString("Eval help function '%1 (%2)' in line %3 failed! Error: '%4'")
+                            .arg(helpFunc,
+                                 QtTIAbstractHelperFunction::typesToStr(QtTIAbstractHelperFunction::vListArgsTypes(helpFuncArgs)))
+                            .arg(lineNum)
+                            .arg(err);
+                    return QMap<QString, QVariant>();
+                }
             }
         }
         tmpRes.insert(replaceStr, funcRes);
@@ -292,7 +297,7 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpParams(const QString &line, 
         if (rx.captureCount() < 4)
             continue;
         QString replaceStr = rx.cap(1);
-        QString tagOpen = rx.cap(2);
+        QString tagOpen = rx.cap(3);
 
         // get valif expr
         replaceStr = validParamExpr(replaceStr, QString("%1}").arg((tagOpen == "{") ? "}" : "#" ));
@@ -301,8 +306,9 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpParams(const QString &line, 
         // re-select regex data
         if (rx.indexIn(replaceStr, 0) == -1)
             continue;
-        QString helpCondition = rx.cap(3).trimmed();
-        QString tagClose = rx.cap(4);
+        const bool isRawValue = rx.cap(2) == "rv";
+        QString helpCondition = rx.cap(4).trimmed();
+        QString tagClose = rx.cap(5);
 
         // check
         if (tagOpen == "{" && tagClose != "}") {
@@ -320,7 +326,9 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpParams(const QString &line, 
 
         // check condition
         QVariant resultValue;
-        if (tagOpen != "#" && QtTIParserTernaryOperator::isTernaryOperatorExpr(helpCondition)) {
+        if (isRawValue) {
+            resultValue = QString(replaceStr).remove(0, 2);
+        } else if (tagOpen != "#" && QtTIParserTernaryOperator::isTernaryOperatorExpr(helpCondition)) {
             bool calcIsOk = false;
             QString calcErr;
             QVariant calcRes = QtTIParserTernaryOperator::parseTernaryOperator(helpCondition, &_parserArgs, &_parserFunc, &calcIsOk, calcErr);
