@@ -725,10 +725,13 @@ The following operators are supported:
     {{ 3 - 2 }} is 1
     ```
 
-- ```/``` - Divides two numbers. The returned value will be a floating point number:
+- ```/``` - Divides two numbers. The return type will depend on the types of the expression's arguments:
     
     ```twig
-    {{ 1 / 2 }} is 0.5
+    {{ 1 / 2 }} is 0 (type: integer)
+    {{ 1 / 2.0 }} is 0.5 (type: double)
+    {{ 1.0 / 2 }} is 0.5 (type: double)
+    {{ 1.0 / 2.0 }} is 0.5 (type: double)
     ```
 
 - ```%``` - Calculates the remainder of an integer division:
@@ -741,7 +744,7 @@ The following operators are supported:
     
     ```twig
     {{ 20 // 7 }} is 2
-    {{ -20 // 7 }} is -3
+    {{ -20 // 7 }} is -2
     ```
 
 - ```*``` - Multiplies the left operand with the right one:

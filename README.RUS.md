@@ -728,10 +728,13 @@ ti.appendHelpFunction(new QtTIHelperFunction<TestD*>("my_func_ptr", [](const Tes
     {{ 3 - 2 }} is 1
     ```
 
-- ```/``` - Делит два числа. Возвращаемое значение будет числом с плавающей запятой:
+- ```/``` - Делит два числа. Тип возвращаемого значения будет зависеть от типов аргументов выражения:
     
     ```twig
-    {{ 1 / 2 }} is 0.5
+    {{ 1 / 2 }} is 0 (type: integer)
+    {{ 1 / 2.0 }} is 0.5 (type: double)
+    {{ 1.0 / 2 }} is 0.5 (type: double)
+    {{ 1.0 / 2.0 }} is 0.5 (type: double)
     ```
 
 - ```%``` - Вычисляет остаток от целочисленного деления:
@@ -744,7 +747,7 @@ ti.appendHelpFunction(new QtTIHelperFunction<TestD*>("my_func_ptr", [](const Tes
     
     ```twig
     {{ 20 // 7 }} is 2
-    {{ -20 // 7 }} is -3
+    {{ -20 // 7 }} is -2
     ```
 
 - ```*``` - Умножает левый операнд на правый:
