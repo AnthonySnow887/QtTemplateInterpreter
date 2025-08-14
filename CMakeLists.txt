@@ -30,6 +30,7 @@ add_library(QtTemplateInterpreter STATIC
     QtTIParser/Math/QtTIMathAction.h
     QtTIParser/NullCoalescingOperator/QtTIParserNullCoalescingOperator.h
     QtTIParser/QtTIParser.h
+    QtTIParser/QtTIParserBlock.h
     QtTIParser/QtTIParserArgs.h
     QtTIParser/Math/QtTIParserMath.h
     QtTIParser/BracketsExpr/QtTIParserBracketsExpr.h

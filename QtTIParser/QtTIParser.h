@@ -4,6 +4,7 @@
 #include <QString>
 #include <tuple>
 
+#include "QtTIParserBlock.h"
 #include "QtTIParserArgs.h"
 #include "QtTIParserFunc.h"
 #include "../QtTIHelperFunction/QtTIHelperFunction.h"
@@ -20,6 +21,10 @@ public:
     QString removeComments(const QString &line, bool *isMultiline);
 
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseLine(const QString &line, const int lineNum);
+
+    std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseLine_v2(const QString &line,
+                                                                        const int lineNum,
+                                                                        QtTIParserBlock &block);
 
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseHelpFunctions(const QString &line, const int lineNum);
     QMap<QString, QVariant> parseAndExecHelpFunctions(const QString &line, const int lineNum, bool *isOk, QString &error);

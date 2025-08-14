@@ -29,6 +29,7 @@ HEADERS += \
     $$PWD/QtTIParser/QtTIParserFunc.h \
     $$PWD/QtTIParser/TernaryOperator/QtTIParserTernaryOperator.h \
     $$PWD/QtTIParser/HelperClasses/RegExp.h \
+    $$PWD/QtTIParser/QtTIParserBlock.h \
     $$PWD/QtTemplateInterpreter.h \
     $$PWD/QtTemplateInterpreterVersion.h
 

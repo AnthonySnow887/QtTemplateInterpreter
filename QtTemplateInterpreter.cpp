@@ -186,6 +186,70 @@ QString QtTemplateInterpreter::interpretRes(QString data)
     return result;
 }
 
+std::tuple<bool, QString, QString> QtTemplateInterpreter::interpret_v2(QString data)
+{
+    QString lineEndAppender;
+    if (data.indexOf("\n") != -1)
+        lineEndAppender = QString("\r\n");
+
+    QTextStream in(&data);
+    int lineNum = 0;
+//    QString multilineBlockBody;
+//    bool isMultilineBlock = false;
+//    QtTIAbstractControlBlock *block = nullptr;
+//    QString unfinishedBlockCond;
+
+    QtTIParserBlock block;
+    QString tmpData;
+    while (!in.atEnd()) {
+        if (!tmpData.isEmpty()
+            && tmpData[tmpData.size() - 1] != '\n')
+            tmpData += "\r\n";
+
+        lineNum++;
+        QString line = in.readLine() + lineEndAppender;
+        bool isOk = false;
+        QString error;
+        std::tie(isOk, line, error) = _parser->parseLine_v2(line, lineNum, block);
+        if (!isOk) {
+//            clear(block);
+            return std::make_tuple(false, "", error);
+        }
+
+//        // remove comments
+//        line = _parser->removeComments(line, &isMultilineComment);
+
+//        // search block
+//        bool isOk = false;
+//        QString error;
+//        std::tie(isOk, line, block, unfinishedBlockCond, error) = _blockFabric->parseBlock(line, block, unfinishedBlockCond, lineNum);
+//        if (!isOk) {
+//            clear(block);
+//            return std::make_tuple(false, "", error);
+//        }
+//        if (!unfinishedBlockCond.isEmpty() || isMultilineComment)
+//            continue;
+
+//        // search params & functions
+//        std::tie(isOk, line, error) = _parser->parseLine(line, lineNum);
+//        if (!isOk) {
+//            clear(block);
+//            return std::make_tuple(false, "", error);
+//        }
+        tmpData += line;
+    }
+
+//    // check block
+//    if (block) {
+//        QString error = QString("Unfinished block in line %1!").arg(block->lineNum());
+//        clear(block);
+//        return std::make_tuple(false, "", error);
+//    }
+
+//    clear(block);
+    return std::make_tuple(true, tmpData, "");
+}
+
 //!
 //! \brief Interpret the template data from file
 //! \param path File path
