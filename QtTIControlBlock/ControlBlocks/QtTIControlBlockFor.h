@@ -57,6 +57,8 @@ public:
     bool isBlockCondStart(const QString &blockCond) final;
     bool isBlockCondEnd(const QString &blockCond) final;
     void appendBlockBody(const QString &blockBody, const int lineNum) final;
+    void setBlockBody(const QString &blockBody, const int lineNum) final;
+    QString blockBody(const int lineNum) const final;
 
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> evalBlock() final;
 

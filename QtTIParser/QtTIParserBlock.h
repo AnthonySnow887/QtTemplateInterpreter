@@ -43,6 +43,7 @@ public:
         _data = obj.data();
         _startPos = obj.startPos();
         _endPos = obj.endPos();
+        _hasDataBeforeBlock = obj.hasDataBeforeBlock();
         _controlBlock = obj.controlBlock();
     }
 
@@ -52,6 +53,7 @@ public:
         _data = obj.data();
         _startPos = obj.startPos();
         _endPos = obj.endPos();
+        _hasDataBeforeBlock = obj.hasDataBeforeBlock();
         _controlBlock = obj.controlBlock();
         return *this;
     }
@@ -107,6 +109,21 @@ public:
         return Type::Invalid;
     }
 
+    Type potentialType() const {
+        QRegExp rx(RX_BLOCK_START);
+        if (rx.indexIn(_data) != 0)
+            return Type::Invalid;
+        if (rx.captureCount() < 2)
+            return Type::Invalid;
+        if (rx.cap(1) == "{")
+            return Type::Base;
+        else if (rx.cap(1) == "%")
+            return Type::Control;
+        else if (rx.cap(1) == "#")
+            return Type::Comment;
+        return Type::Invalid;
+    }
+
     QString data() const { return _data; }
     const QString &data_ref() const { return _data; }
 
@@ -124,6 +141,8 @@ public:
 
     QPair<int, int> endPos() const { return _endPos; }
     const QPair<int, int> &endPos_ref() const { return _endPos; }   
+
+    bool hasDataBeforeBlock() const { return _hasDataBeforeBlock; }
 
     QtTIAbstractControlBlock *controlBlock() const { return _controlBlock; }
 
@@ -153,12 +172,17 @@ public:
         _startPos.second = -1;
         _endPos.first = -1;
         _endPos.second = -1;
+        _hasDataBeforeBlock = true;
         // TODO
 //        if (_controlBlock)
 //            delete _controlBlock;
     }
 
 protected:
+    void setHasDataBeforeBlock(const bool hasDataBeforeBlock) {
+        _hasDataBeforeBlock = hasDataBeforeBlock;
+    }
+
     void setControlBlock(QtTIAbstractControlBlock *controlBlock) {
         // TODO
 //        if (_controlBlock)
@@ -166,11 +190,17 @@ protected:
         _controlBlock = controlBlock;
     }
 
-private:
+    void setEndPos(const QPair<int, int> &endPos) {
+        _endPos = endPos;
+    }
+
+//private:
     QString _data;
 
     QPair<int /*line*/, int /*pos*/> _startPos {-1, -1};
     QPair<int /*line*/, int /*pos*/> _endPos {-1, -1};
+
+    bool _hasDataBeforeBlock {true};
 
     QtTIAbstractControlBlock *_controlBlock {nullptr};
 };

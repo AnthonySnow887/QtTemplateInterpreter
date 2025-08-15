@@ -68,6 +68,16 @@ void QtTIControlBlockFor::appendBlockBody(const QString &blockBody, const int li
     _blockBody[lineNum].append(blockBody);
 }
 
+void QtTIControlBlockFor::setBlockBody(const QString &blockBody, const int lineNum)
+{
+    _blockBody[lineNum] = blockBody;
+}
+
+QString QtTIControlBlockFor::blockBody(const int lineNum) const
+{
+    return _blockBody[lineNum];
+}
+
 //!
 //! \brief Execute control block
 //! \return

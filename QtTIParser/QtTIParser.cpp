@@ -105,16 +105,18 @@ std::tuple<bool, QString, QString> QtTIParser::parseLine(const QString &line, co
     return std::make_tuple(true, newLine, "");
 }
 
-std::tuple<bool, QString, QString> QtTIParser::parseLine_v2(const QString &line, const int lineNum, QtTIParserBlock &block)
+std::tuple<bool, QString, QString, QtTIParserBlock*> QtTIParser::parseLine_v2(const QString &line, const int lineNum, QtTIParserBlock *block)
 {
     QString blockData;
     QPair<int, int> blockStartPos(-1, -1);
     QPair<int, int> blockEndPos(-1, -1);
-    bool isBlock = block.isUnfinished();
-    if (isBlock) {
-        blockData = block.data();
-        blockStartPos = block.startPos();
-    }
+    bool isBlock = false;
+    if (block)
+        isBlock = block->isUnfinished();
+//    if (isBlock) {
+//        blockData = block.data();
+//        blockStartPos = block.startPos();
+//    }
 
     bool isString = false;
     QString tmpLine;
@@ -158,85 +160,101 @@ std::tuple<bool, QString, QString> QtTIParser::parseLine_v2(const QString &line,
 
             // check is block end
             bool isBlockCondEnd = false;
-            if (block.type() == QtTIParserBlock::Type::Control
-                && block.controlBlock()) {
+            if (block
+                && block->type() == QtTIParserBlock::Type::Control
+                && block->controlBlock()) {
                 QtTIParserBlock tmpBlock(blockData, blockStartPos, blockEndPos);
-                if (block.controlBlock()->isBlockCondIntermediate(tmpBlock.body().trimmed())) {
-                    block.controlBlock()->appendBlockCondIntermediate(tmpBlock.body().trimmed());
-                } else if (block.controlBlock()->isBlockCondEnd(tmpBlock.body().trimmed())) {
+                if (block->controlBlock()->isBlockCondIntermediate(tmpBlock.body().trimmed())) {
+                    block->controlBlock()->appendBlockCondIntermediate(tmpBlock.body().trimmed());
+                } else if (block->controlBlock()->isBlockCondEnd(tmpBlock.body().trimmed())) {
                     isBlockCondEnd = true;
+                    // update end pos
+                    block->_endPos = tmpBlock.endPos_ref();
                 } else {
-                    block.controlBlock()->appendBlockBody(tmpBlock.data_ref(), tmpBlock.startPos().first);
+                    block->controlBlock()->appendBlockBody(tmpBlock.data_ref(), tmpBlock.startPos().first);
                 }
             } else {
-                block = QtTIParserBlock(blockData, blockStartPos, blockEndPos);
+                if (block) {
+                    block->_data += blockData;
+                    block->_endPos = blockEndPos;
+                } else {
+                    block = new QtTIParserBlock(blockData, blockStartPos, blockEndPos);
+                    block->setHasDataBeforeBlock(!tmpLine.trimmed().isEmpty());
+                }
 
                 qDebug() << "IS BLOCK: "
-                         << block.isValid()
-                         << static_cast<int>(block.type())
-                         << block.startPos()
-                         << block.endPos()
-                         << block.data_ref()
-                         << block.body();
+                         << block->isValid()
+                         << static_cast<int>(block->type())
+                         << block->startPos()
+                         << block->endPos()
+                         << block->data_ref()
+                         << block->body();
 
                 // check is valid block
-                if (!block.isValid()) {
+                if (!block->isValid()) {
                     QString err = QString("Invalid block '%1' in line %2")
-                                  .arg(block.data_ref())
-                                  .arg(block.startPos().first);
-                    return std::make_tuple(false, "", err);
+                                  .arg(block->data_ref())
+                                  .arg(block->startPos().first);
+                    delete block;
+                    block = nullptr;
+                    return std::make_tuple(false, "", err, nullptr);
                 }
 
                 // check block type
-                if (block.type() == QtTIParserBlock::Type::Control) {
+                if (block->type() == QtTIParserBlock::Type::Control) {
                     QtTIControlBlockFabric bf(this); // TODO
-                    QtTIAbstractControlBlock *bfObject = bf.createBlock(block.body().trimmed(), block.startPos().first);
+                    QtTIAbstractControlBlock *bfObject = bf.createBlock(block->body().trimmed(), block->startPos().first);
                     if (!bfObject) {
                         QString err = QString("Unsupported control block '%1' in line %2")
-                                      .arg(block.data_ref())
-                                      .arg(block.startPos().first);
-                        return std::make_tuple(false, "", err);
+                                      .arg(block->data_ref())
+                                      .arg(block->startPos().first);
+                        delete block;
+                        block = nullptr;
+                        return std::make_tuple(false, "", err, nullptr);
                     }
-                    block.setControlBlock(bfObject);
+                    block->setControlBlock(bfObject);
                     // check is block ended
-                    isBlockCondEnd = block.controlBlock()->isBlockCondEnd(block.body().trimmed());
+                    isBlockCondEnd = block->controlBlock()->isBlockCondEnd(block->body().trimmed());
                 }
             }
 
             // check is valid block
-            if (block.type() == QtTIParserBlock::Type::Invalid) {
+            if (block->type() == QtTIParserBlock::Type::Invalid) {
                 QString err = QString("Invalid block '%1' in line %2")
-                              .arg(block.data_ref())
-                              .arg(block.startPos().first);
-                return std::make_tuple(false, "", err);
+                              .arg(block->data_ref())
+                              .arg(block->startPos().first);
+                delete block;
+                block = nullptr;
+                return std::make_tuple(false, "", err, nullptr);
             }
 
             // eval block
-            if (block.type() == QtTIParserBlock::Type::Base) {
+            if (block->type() == QtTIParserBlock::Type::Base) {
                 // TODO parse function or param
-                QString res = QString("START{{ %1 }}END").arg(block.body());
+                QString res = QString("START{{ %1 }}END").arg(block->body());
 
                 // add to tmpLine
                 tmpLine += res;
-                // clear block object
-                block.clear();
-            } else if (block.type() == QtTIParserBlock::Type::Control
+            } else if (block->type() == QtTIParserBlock::Type::Control
                        && isBlockCondEnd) {
                 bool isOk = false;
                 QString res, err;
-                std::tie(isOk, res, err) = block.controlBlock()->evalBlock();
+                std::tie(isOk, res, err) = block->controlBlock()->evalBlock();
                 if (!isOk) {
                     QString errFull = QString("Eval control block '%1' in line %2 failed! Error: %3")
-                                      .arg(block.data_ref())
-                                      .arg(block.startPos().first)
+                                      .arg(block->data_ref())
+                                      .arg(block->startPos().first)
                                       .arg(err);
-                    return std::make_tuple(false, "", errFull);
+                    delete block;
+                    block = nullptr;
+                    return std::make_tuple(false, "", errFull, nullptr);
                 }
-                // add to tmpLine
+                // add to tmpLine,
                 tmpLine += res;
-                // clear block object
-                block.clear();
             }
+            // clear block object
+            delete block;
+            block = nullptr;
             // clear
             blockData.clear();
             isBlock = false;
@@ -246,16 +264,45 @@ std::tuple<bool, QString, QString> QtTIParser::parseLine_v2(const QString &line,
         if (isBlock)
             blockData += ch;
         else if (!isBlock
-                 && block.type() == QtTIParserBlock::Type::Control
-                 && block.controlBlock())
-            block.controlBlock()->appendBlockBody(ch, lineNum);
+                 && block
+                 && block->type() == QtTIParserBlock::Type::Control
+                 && block->controlBlock())
+            block->controlBlock()->appendBlockBody(ch, lineNum);
         else
             tmpLine += ch;
     }
-    if (isBlock)
-        block = QtTIParserBlock(blockData, blockStartPos, blockEndPos);
-
-    return std::make_tuple(true, tmpLine, "");
+    if (isBlock) {
+        if (block) {
+            if (block->type() == QtTIParserBlock::Type::Control
+                && block->controlBlock()) {
+                QtTIParserBlock tmpBlock(blockData, blockStartPos, blockEndPos);
+                block->controlBlock()->appendBlockBody(tmpBlock.data_ref(), tmpBlock.startPos().first);
+            } else {
+                block->_data += blockData;
+            }
+        } else {
+            block = new QtTIParserBlock(blockData, blockStartPos, blockEndPos);
+            block->setHasDataBeforeBlock(!tmpLine.trimmed().isEmpty()); // TODO ...
+        }
+        if (block->potentialType() == QtTIParserBlock::Type::Control
+            || block->type() == QtTIParserBlock::Type::Comment)
+            tmpLine = tmpLine.trimmed();
+    }
+    if (block
+        && !block->hasDataBeforeBlock()
+        && (block->type() == QtTIParserBlock::Type::Control
+         || block->type() == QtTIParserBlock::Type::Comment)) {
+        const int lPos = block->endPos_ref().second + 1;
+        const QString lineEnd = line.mid(lPos);
+        if (lineEnd.trimmed().isEmpty()) {
+            tmpLine = QtTIParser::rstrip(tmpLine);
+            if (block->controlBlock()) {
+                QString cBlockBody = block->controlBlock()->blockBody(lineNum);
+                block->controlBlock()->setBlockBody(QtTIParser::rstrip(cBlockBody), lineNum);
+            }
+        }
+    }
+    return std::make_tuple(true, tmpLine, "", block);
 }
 
 
@@ -547,6 +594,26 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpParams(const QString &line, 
     if (isOk)
         *isOk = true;
     return tmpRes;
+}
+
+QString QtTIParser::lstrip(const QString &str)
+{
+    int n = 0;
+    for (; n < str.size(); ++n) {
+        if (!str.at(n).isSpace())
+            return str.right(str.size() - n);
+    }
+    return "";
+}
+
+QString QtTIParser::rstrip(const QString &str)
+{
+    int n = str.size() - 1;
+    for (; n >= 0; --n) {
+        if (!str.at(n).isSpace())
+            return str.left(n + 1);
+    }
+    return "";
 }
 
 //!

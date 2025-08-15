@@ -156,6 +156,16 @@ public:
         Q_UNUSED(lineNum)
     }
 
+    virtual void setBlockBody(const QString &blockBody, const int lineNum) {
+        Q_UNUSED(blockBody)
+        Q_UNUSED(lineNum)
+    }
+
+    virtual QString blockBody(const int lineNum) const {
+        Q_UNUSED(lineNum)
+        return QString();
+    }
+
 protected:
     //!
     //! \brief Get QtTIParser
