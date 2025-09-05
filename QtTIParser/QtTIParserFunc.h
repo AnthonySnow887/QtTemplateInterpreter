@@ -3,22 +3,23 @@
 
 #include <QMultiHash>
 #include <QString>
+#include "Abstract/QtTIAbstractParserFunc.h"
 #include "../QtTIHelperFunction/QtTIHelperFunction.h"
 
-class QtTIParserFunc
+class QtTIParserFunc : public QtTIAbstractParserFunc
 {
 public:
     QtTIParserFunc();
-    ~QtTIParserFunc();
+    virtual ~QtTIParserFunc();
 
-    void appendHelpFunction(const QtTIAbstractHelperFunction *func);
-    void removeHelpFunction(const QString &funcName, const QVariantList &args);
+    void appendHelpFunction(const QtTIAbstractHelperFunction *func) final;
+    void removeHelpFunction(const QString &funcName, const QVariantList &args) final;
 
-    bool hasHelpFunction(const QString& funcName, const QVariantList &args, const bool strictArgs = false) const;
-    const QtTIAbstractHelperFunction *findHelpFunction(const QString& funcName, const QVariantList &args, const bool strictArgs = false) const;
-    std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> evalHelpFunction(const QString& funcName, const QVariantList &args, const bool strictArgs = false) const;
+    bool hasHelpFunction(const QString& funcName, const QVariantList &args, const bool strictArgs = false) const final;
+    const QtTIAbstractHelperFunction *findHelpFunction(const QString& funcName, const QVariantList &args, const bool strictArgs = false) const final;
+    std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> evalHelpFunction(const QString& funcName, const QVariantList &args, const bool strictArgs = false) const final;
 
-    void clearFunctions();
+    void clearFunctions() final;
 
 private:
     QMultiHash<QString, const QtTIAbstractHelperFunction *> _functions;

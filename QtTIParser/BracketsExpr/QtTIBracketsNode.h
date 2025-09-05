@@ -9,7 +9,7 @@
 #include <functional>
 #include <tuple>
 
-#include "../QtTIParserArgs.h"
+#include "../Abstract/QtTIAbstractParserArgs.h"
 
 //!
 //! \brief The QtTIBracketsNode class
@@ -24,7 +24,7 @@ public:
     //! \param parserArgs QtTIParserArgs object pointer
     //! \param callback Callback function for method 'QtTIBracketsNode::evalNodeBody(...)'
     //!
-    explicit QtTIBracketsNode(QtTIParserArgs *parserArgs,
+    explicit QtTIBracketsNode(QtTIAbstractParserArgs *parserArgs,
                               std::function<std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/>(const QString &nodeBody)> callback)
         : _uuid(QUuid::createUuid().toString().mid(1,36))
         , _uuidHash(QCryptographicHash::hash(_uuid.toUtf8(), QCryptographicHash::Sha1).toHex().constData())
@@ -148,7 +148,7 @@ private:
     //! \brief Get QtTIParserArgs object pointer
     //! \return
     //!
-    QtTIParserArgs *parserArgs() const { return _parserArgs; }
+    QtTIAbstractParserArgs *parserArgs() const { return _parserArgs; }
 
     //!
     //! \brief Get callback function for method 'QtTIBracketsNode::evalNodeBody(...)'
@@ -171,7 +171,7 @@ private:
 private:
     QString _uuid;                          //!< block uuid
     QString _uuidHash;                      //!< block uuid SHA1 hash
-    QtTIParserArgs *_parserArgs {nullptr};  //!< QtTIParserArgs object pointer
+    QtTIAbstractParserArgs *_parserArgs {nullptr};  //!< QtTIParserArgs object pointer
 
     std::function<std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/>(const QString &nodeBody)> _callback {nullptr}; //!< callback function for method 'QtTIBracketsNode::evalNodeBody(...)'
 

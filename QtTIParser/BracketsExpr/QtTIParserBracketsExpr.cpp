@@ -10,7 +10,7 @@
 //!
 QtTIBracketsNode QtTIParserBracketsExpr::parseBracketsExpression(const QString &string,
                                                                  const QStringList &validStringsBeforeBracket,
-                                                                 QtTIParserArgs *parserArgs,
+                                                                 QtTIAbstractParserArgs *parserArgs,
                                                                  std::function<std::tuple<bool, QVariant, QString> (const QString &)> callback)
 {
     if (string.isEmpty())

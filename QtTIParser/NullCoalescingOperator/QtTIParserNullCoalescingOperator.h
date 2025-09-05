@@ -4,8 +4,8 @@
 #include <QString>
 #include <QVariant>
 
-#include "../QtTIParserArgs.h"
-#include "../QtTIParserFunc.h"
+#include "../Abstract/QtTIAbstractParserArgs.h"
+#include "../Abstract/QtTIAbstractParserFunc.h"
 
 class QtTIParserNullCoalescingOperator
 {
@@ -15,19 +15,19 @@ public:
 
     static bool isNullCoalescingOperatorExpr(const QString &expr);
     static QVariant parseNullCoalescingOperator(const QString &expr,
-                                                QtTIParserArgs *parserArgs,
-                                                QtTIParserFunc *parserFunc,
+                                                QtTIAbstractParserArgs *parserArgs,
+                                                QtTIAbstractParserFunc *parserFunc,
                                                 bool *isOk,
                                                 QString &error);
 
 private:
     static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> evalCond(const QString &str,
-                                                                            QtTIParserArgs *parserArgs,
-                                                                            QtTIParserFunc *parserFunc);
+                                                                            QtTIAbstractParserArgs *parserArgs,
+                                                                            QtTIAbstractParserFunc *parserFunc);
 
     static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseParamValue(const QString &str,
-                                                                                   QtTIParserArgs *parserArgs,
-                                                                                   QtTIParserFunc *parserFunc);
+                                                                                   QtTIAbstractParserArgs *parserArgs,
+                                                                                   QtTIAbstractParserFunc *parserFunc);
 };
 
 #endif // QTTIPARSERNULLCOALESCINGOPERATOR_H

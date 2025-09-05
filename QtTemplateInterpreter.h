@@ -38,6 +38,7 @@ private:
     QtTIControlBlockFabric *_blockFabric {nullptr};     //!< control blocks fabric
 
     void clear(QtTIAbstractControlBlock *block);
+    void clear(QtTIAbstractParserBlock *block);
 };
 
 #endif // QTTEMPLATEINTERPRETER_H

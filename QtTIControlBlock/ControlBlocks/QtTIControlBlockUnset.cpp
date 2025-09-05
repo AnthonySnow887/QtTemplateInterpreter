@@ -1,10 +1,10 @@
 #include "QtTIControlBlockUnset.h"
 
-QtTIControlBlockUnset::QtTIControlBlockUnset(QtTIParser *parser)
+QtTIControlBlockUnset::QtTIControlBlockUnset(QtTIAbstractParser *parser)
     : QtTIAbstractControlBlock(parser, -1)
 {}
 
-QtTIControlBlockUnset::QtTIControlBlockUnset(QtTIParser *parser, const QString &blockCond, const int lineNum)
+QtTIControlBlockUnset::QtTIControlBlockUnset(QtTIAbstractParser *parser, const QString &blockCond, const int lineNum)
     : QtTIAbstractControlBlock(parser, lineNum)
     , _blockCond(blockCond)
 {}

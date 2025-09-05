@@ -18,6 +18,10 @@ HEADERS += \
     $$PWD/QtTIHelperFunction/QtTIAbstractHelperFunction.h \
     $$PWD/QtTIHelperFunction/QtTIHelperFunction.h \
     $$PWD/QtTIHelperFunction/QtTIHelperFunctionArg.h \
+    $$PWD/QtTIParser/Abstract/QtTIAbstractParser.h \
+    $$PWD/QtTIParser/Abstract/QtTIAbstractParserArgs.h \
+    $$PWD/QtTIParser/Abstract/QtTIAbstractParserBlock.h \
+    $$PWD/QtTIParser/Abstract/QtTIAbstractParserFunc.h \
     $$PWD/QtTIParser/BracketsExpr/QtTIBracketsNode.h \
     $$PWD/QtTIParser/Logic/QtTIParserLogic.h \
     $$PWD/QtTIParser/Math/QtTIMathAction.h \

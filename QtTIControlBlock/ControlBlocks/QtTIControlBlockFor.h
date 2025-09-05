@@ -48,8 +48,8 @@
 class QtTIControlBlockFor : public QtTIAbstractControlBlock
 {
 public:
-    QtTIControlBlockFor(QtTIParser *parser);
-    QtTIControlBlockFor(QtTIParser *parser, const QString &blockCond, const int lineNum);
+    QtTIControlBlockFor(QtTIAbstractParser *parser);
+    QtTIControlBlockFor(QtTIAbstractParser *parser, const QString &blockCond, const int lineNum);
     virtual ~QtTIControlBlockFor();
 
     QtTIAbstractControlBlock *makeBlock(const QString &blockCond, const int lineNum) final;

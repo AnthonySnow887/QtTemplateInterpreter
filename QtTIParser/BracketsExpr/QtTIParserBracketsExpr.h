@@ -14,7 +14,7 @@ public:
 
     static QtTIBracketsNode parseBracketsExpression(const QString &string,
                                                     const QStringList &validStringsBeforeBracket,
-                                                    QtTIParserArgs *parserArgs,
+                                                    QtTIAbstractParserArgs *parserArgs,
                                                     std::function<std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/>(const QString &nodeBody)> callback);
 };
 

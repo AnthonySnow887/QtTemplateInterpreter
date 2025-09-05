@@ -51,8 +51,8 @@ bool QtTIParserLogic::isLogicExpr(const QString &expr)
 //!         {{ my_test_array () && a <= 5 }} is false
 //!
 QVariant QtTIParserLogic::parseLogic(const QString &expr,
-                                     QtTIParserArgs *parserArgs,
-                                     QtTIParserFunc *parserFunc,
+                                     QtTIAbstractParserArgs *parserArgs,
+                                     QtTIAbstractParserFunc *parserFunc,
                                      bool *isOk,
                                      QString &error)
 {
@@ -101,8 +101,8 @@ QVariant QtTIParserLogic::parseLogic(const QString &expr,
 //! \return
 //!
 QVariant QtTIParserLogic::parseLogicWithoutBrackets(const QString &expr,
-                                                    QtTIParserArgs *parserArgs,
-                                                    QtTIParserFunc *parserFunc,
+                                                    QtTIAbstractParserArgs *parserArgs,
+                                                    QtTIAbstractParserFunc *parserFunc,
                                                     bool *isOk,
                                                     QString &error)
 {
@@ -147,8 +147,8 @@ QVariant QtTIParserLogic::parseLogicWithoutBrackets(const QString &expr,
 //!         a > 5 and b <= 2
 //!
 std::tuple<bool, bool, QString> QtTIParserLogic::compareBlockCondition(const QString &str,
-                                                                       QtTIParserArgs *parserArgs,
-                                                                       QtTIParserFunc *parserFunc)
+                                                                       QtTIAbstractParserArgs *parserArgs,
+                                                                       QtTIAbstractParserFunc *parserFunc)
 {
     QString expression = str.trimmed();
     QRegExp rxInvalid("^(&&|and|\\|\\||or)\\s+");
@@ -206,8 +206,8 @@ std::tuple<bool, bool, QString> QtTIParserLogic::compareBlockCondition(const QSt
 //!         a > 5
 //!
 std::tuple<bool, bool, QString> QtTIParserLogic::compareExpression(const QString &str,
-                                                                   QtTIParserArgs *parserArgs,
-                                                                   QtTIParserFunc *parserFunc)
+                                                                   QtTIAbstractParserArgs *parserArgs,
+                                                                   QtTIAbstractParserFunc *parserFunc)
 {
     QRegExp rxLeftRight(RX_LOGIC_LEFT_RIGHT);
     QRegExp rxOne(RX_LOGIC_ONE);
@@ -270,8 +270,8 @@ std::tuple<bool, bool, QString> QtTIParserLogic::compareExpression(const QString
 //! \return
 //!
 std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> QtTIParserLogic::parseParamValue(const QString &str,
-                                                                                         QtTIParserArgs *parserArgs,
-                                                                                         QtTIParserFunc *parserFunc)
+                                                                                         QtTIAbstractParserArgs *parserArgs,
+                                                                                         QtTIAbstractParserFunc *parserFunc)
 {
     if (str.isEmpty())
         return std::make_tuple(false, QVariant(), "Parse value failed (empty string passed)");

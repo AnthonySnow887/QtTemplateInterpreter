@@ -54,7 +54,7 @@ bool QtTIParserMath::isMathExpr(const QString &expr)
 //!         {{ ( 10.5 + 2 * 2 ) / 3 + 10 - 1 + 2 ** 2 }} is 17.833333333333332
 //!         {{ ( 10.5 + 2 * (2 + 5)) / (3 + 10 * 2) - (1 + 2) ** 2 }} is -7.934782608695652
 //!
-QVariant QtTIParserMath::parseMath(const QString &expr, QtTIParserArgs *parserArgs, QtTIParserFunc *parserFunc, bool *isOk, QString &error)
+QVariant QtTIParserMath::parseMath(const QString &expr, QtTIAbstractParserArgs *parserArgs, QtTIAbstractParserFunc *parserFunc, bool *isOk, QString &error)
 {
     if (isOk)
         *isOk = false;
@@ -96,7 +96,7 @@ QVariant QtTIParserMath::parseMath(const QString &expr, QtTIParserArgs *parserAr
 //! \param[in,out] error
 //! \return
 //!
-QVariant QtTIParserMath::parseMathWithoutBrackets(const QString &expr, QtTIParserArgs *parserArgs, QtTIParserFunc *parserFunc, bool *isOk, QString &error)
+QVariant QtTIParserMath::parseMathWithoutBrackets(const QString &expr, QtTIAbstractParserArgs *parserArgs, QtTIAbstractParserFunc *parserFunc, bool *isOk, QString &error)
 {
     if (isOk)
         *isOk = false;
@@ -175,7 +175,7 @@ QVariant QtTIParserMath::parseMathWithoutBrackets(const QString &expr, QtTIParse
 //! \param[in,out] isOk
 //! \param[in,out] error
 //!
-void QtTIParserMath::parseLR(const QString &expr, QList<QtTIMathAction> *actions, QtTIParserArgs *parserArgs, QtTIParserFunc *parserFunc, bool *isOk, QString &error)
+void QtTIParserMath::parseLR(const QString &expr, QList<QtTIMathAction> *actions, QtTIAbstractParserArgs *parserArgs, QtTIAbstractParserFunc *parserFunc, bool *isOk, QString &error)
 {
     if (isOk)
         *isOk = false;
@@ -237,7 +237,7 @@ void QtTIParserMath::parseLR(const QString &expr, QList<QtTIMathAction> *actions
 //! \param str Parameter value string view
 //! \return
 //!
-std::tuple<bool, QVariant, QString> QtTIParserMath::parseParamValue(const QString &str, QtTIParserArgs *parserArgs, QtTIParserFunc *parserFunc)
+std::tuple<bool, QVariant, QString> QtTIParserMath::parseParamValue(const QString &str, QtTIAbstractParserArgs *parserArgs, QtTIAbstractParserFunc *parserFunc)
 {
     if (str.isEmpty())
         return std::make_tuple(false, QVariant(), "Parse value failed (empty string passed)");

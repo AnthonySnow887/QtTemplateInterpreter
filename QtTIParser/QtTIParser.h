@@ -4,27 +4,26 @@
 #include <QString>
 #include <tuple>
 
-#include "QtTIParserBlock.h"
+#include "Abstract/QtTIAbstractParser.h"
 #include "QtTIParserArgs.h"
 #include "QtTIParserFunc.h"
-#include "../QtTIHelperFunction/QtTIHelperFunction.h"
 
-class QtTIParser
+class QtTIParser : public QtTIAbstractParser
 {
 public:
     QtTIParser();
-    ~QtTIParser();
+    virtual ~QtTIParser();
 
-    QtTIParserArgs *parserArgs();
-    QtTIParserFunc *parserFunc();
+    QtTIAbstractParserArgs *parserArgs() final;
+    QtTIAbstractParserFunc *parserFunc() final;
 
     QString removeComments(const QString &line, bool *isMultiline);
 
-    std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseLine(const QString &line, const int lineNum);
+    std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseLine(const QString &line, const int lineNum) final;
 
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseLine_v2(const QString &line,
                                                                         const int lineNum,
-                                                                        QtTIParserBlock &block);
+                                                                        QtTIAbstractParserBlock *&block) final;
 
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseHelpFunctions(const QString &line, const int lineNum);
     QMap<QString, QVariant> parseAndExecHelpFunctions(const QString &line, const int lineNum, bool *isOk, QString &error);
@@ -32,9 +31,8 @@ public:
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseHelpParams(const QString &line, const int lineNum);
     QMap<QString, QVariant> parseAndExecHelpParams(const QString &line, const int lineNum, bool *isOk, QString &error);
 
-    static QString lstrip(const QString& str);
-
-    static QString rstrip(const QString& str);
+//    static QString lstrip(const QString& str);
+//    static QString rstrip(const QString& str);
 
 private:
     QString evalHelpParam(const QString& paramName);

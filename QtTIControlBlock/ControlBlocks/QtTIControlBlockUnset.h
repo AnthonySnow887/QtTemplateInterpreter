@@ -15,8 +15,8 @@
 class QtTIControlBlockUnset : public QtTIAbstractControlBlock
 {
 public:
-    QtTIControlBlockUnset(QtTIParser *parser);
-    QtTIControlBlockUnset(QtTIParser *parser, const QString &blockCond, const int lineNum);
+    QtTIControlBlockUnset(QtTIAbstractParser *parser);
+    QtTIControlBlockUnset(QtTIAbstractParser *parser, const QString &blockCond, const int lineNum);
     virtual ~QtTIControlBlockUnset();
 
     QtTIAbstractControlBlock *makeBlock(const QString &blockCond, const int lineNum) final;

@@ -7,12 +7,13 @@
 #include <QTextStream>
 #include <QCryptographicHash>
 #include <QMap>
-#include "../../QtTIParser/QtTIParser.h"
+#include "../../QtTIParser/Abstract/QtTIAbstractParser.h"
 #include "../../QtTIParser/TernaryOperator/QtTIParserTernaryOperator.h"
 #include "../../QtTIParser/NullCoalescingOperator/QtTIParserNullCoalescingOperator.h"
 #include "../../QtTIParser/Logic/QtTIParserLogic.h"
 #include "../../QtTIParser/Math/QtTIParserMath.h"
 #include "../../QtTIDefines/QtTIRegExpDefines.h"
+#include "../../QtTIHelperFunction/QtTIHelperFunction.h"
 
 //!
 //! \brief The QtTIAbstractControlBlock class
@@ -25,7 +26,7 @@ public:
     //! \param parser QtTIParser pointer
     //! \param lineNum Line number
     //!
-    QtTIAbstractControlBlock(QtTIParser *parser, const int lineNum)
+    QtTIAbstractControlBlock(QtTIAbstractParser *parser, const int lineNum)
         : _uuid(QUuid::createUuid().toString().mid(1,36))
         , _uuidHash(QCryptographicHash::hash(_uuid.toUtf8(), QCryptographicHash::Sha1).toHex().constData())
         , _lineNum(lineNum)
@@ -171,7 +172,7 @@ protected:
     //! \brief Get QtTIParser
     //! \return
     //!
-    QtTIParser *parser() const {
+    QtTIAbstractParser *parser() const {
         return _parser;
     }
 
@@ -318,7 +319,7 @@ protected:
         return std::make_tuple(true, tmp[0], "");
     }
 
-    static QString lstrip(const QString& str)
+    static QString lstrip(const QString& str) // TODO delete -> use QtTIAbstractParser::lstrip()
     {
         int n = 0;
         for (; n < str.size(); ++n) {
@@ -328,7 +329,7 @@ protected:
         return "";
     }
 
-    static QString rstrip(const QString& str)
+    static QString rstrip(const QString& str) // TODO delete -> use QtTIAbstractParser::rstrip()
     {
         int n = str.size() - 1;
         for (; n >= 0; --n) {
@@ -342,7 +343,7 @@ private:
     QString _uuid;                                      //!< control block uuid
     QString _uuidHash;                                  //!< control block uuid SHA1 hash
     int _lineNum {-1};                                  //!< control block line number
-    QtTIParser *_parser {nullptr};                      //!< parser point
+    QtTIAbstractParser *_parser {nullptr};              //!< parser point
     QtTIAbstractControlBlock *_parentBlock {nullptr};   //!< parent control block pointer for this control block
     QList<QtTIAbstractControlBlock*> _subBlocks;        //!< nested control blocks list
 };

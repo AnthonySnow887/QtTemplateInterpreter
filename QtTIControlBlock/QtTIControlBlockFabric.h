@@ -11,7 +11,7 @@
 class QtTIControlBlockFabric
 {
 public:
-    explicit QtTIControlBlockFabric(QtTIParser *parser);
+    explicit QtTIControlBlockFabric(QtTIAbstractParser *parser);
     ~QtTIControlBlockFabric();
 
     QtTIAbstractControlBlock *createBlock(const QString &blockCond, const int lineNum);
@@ -26,7 +26,7 @@ public:
                                           const int lineNum);
 
 private:
-    QtTIParser *_parser {nullptr};
+    QtTIAbstractParser *_parser {nullptr};
     QList<QtTIAbstractControlBlock*> _blocks;
 };
 

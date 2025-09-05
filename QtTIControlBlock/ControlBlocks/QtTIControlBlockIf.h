@@ -81,8 +81,8 @@ public:
         Else
     };
 
-    QtTIControlBlockIf(QtTIParser *parser);
-    QtTIControlBlockIf(QtTIParser *parser, const QString &blockCond, const int lineNum);
+    QtTIControlBlockIf(QtTIAbstractParser *parser);
+    QtTIControlBlockIf(QtTIAbstractParser *parser, const QString &blockCond, const int lineNum);
     virtual ~QtTIControlBlockIf();
 
     QtTIAbstractControlBlock *makeBlock(const QString &blockCond, const int lineNum) final;
@@ -107,12 +107,12 @@ private:
     QList<QMap<int,QString>> _elseIfBodys;
 
     static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> evalCond(const QString &str,
-                                                                            QtTIParserArgs *parserArgs,
-                                                                            QtTIParserFunc *parserFunc);
+                                                                            QtTIAbstractParserArgs *parserArgs,
+                                                                            QtTIAbstractParserFunc *parserFunc);
 
     static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseParamValue(const QString &str,
-                                                                                   QtTIParserArgs *parserArgs,
-                                                                                   QtTIParserFunc *parserFunc);
+                                                                                   QtTIAbstractParserArgs *parserArgs,
+                                                                                   QtTIAbstractParserFunc *parserFunc);
 };
 
 #endif // QTTICONTROLBLOCKIF_H

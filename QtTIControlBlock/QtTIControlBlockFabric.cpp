@@ -4,7 +4,7 @@
 #include "ControlBlocks/QtTIControlBlockIf.h"
 #include "ControlBlocks/QtTIControlBlockFor.h"
 
-QtTIControlBlockFabric::QtTIControlBlockFabric(QtTIParser *parser)
+QtTIControlBlockFabric::QtTIControlBlockFabric(QtTIAbstractParser *parser)
     : _parser(parser)
 {
     _blocks.append(new QtTIControlBlockSet(_parser));

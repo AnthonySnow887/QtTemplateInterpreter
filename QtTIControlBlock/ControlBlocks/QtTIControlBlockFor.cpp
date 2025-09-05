@@ -4,11 +4,11 @@
 #include <QMap>
 #include <QHash>
 
-QtTIControlBlockFor::QtTIControlBlockFor(QtTIParser *parser)
+QtTIControlBlockFor::QtTIControlBlockFor(QtTIAbstractParser *parser)
     : QtTIAbstractControlBlock(parser, -1)
 {}
 
-QtTIControlBlockFor::QtTIControlBlockFor(QtTIParser *parser, const QString &blockCond, const int lineNum)
+QtTIControlBlockFor::QtTIControlBlockFor(QtTIAbstractParser *parser, const QString &blockCond, const int lineNum)
     : QtTIAbstractControlBlock(parser, lineNum)
     , _blockCond(blockCond)
 {}

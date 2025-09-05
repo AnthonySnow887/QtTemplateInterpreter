@@ -6,11 +6,11 @@
 #include "../../QtTIParser/Logic/QtTIParserLogic.h"
 #include "../../QtTIParser/Math/QtTIParserMath.h"
 
-QtTIControlBlockIf::QtTIControlBlockIf(QtTIParser *parser)
+QtTIControlBlockIf::QtTIControlBlockIf(QtTIAbstractParser *parser)
     : QtTIAbstractControlBlock(parser, -1)
 {}
 
-QtTIControlBlockIf::QtTIControlBlockIf(QtTIParser *parser, const QString &blockCond, const int lineNum)
+QtTIControlBlockIf::QtTIControlBlockIf(QtTIAbstractParser *parser, const QString &blockCond, const int lineNum)
     : QtTIAbstractControlBlock(parser, lineNum)
     , _ifCond(blockCond)
 {}
@@ -192,8 +192,8 @@ void QtTIControlBlockIf::appendBlockBody(const QString &blockBody, const int lin
 //! \return
 //!
 std::tuple<bool, QVariant, QString> QtTIControlBlockIf::evalCond(const QString &str,
-                                                                 QtTIParserArgs *parserArgs,
-                                                                 QtTIParserFunc *parserFunc)
+                                                                 QtTIAbstractParserArgs *parserArgs,
+                                                                 QtTIAbstractParserFunc *parserFunc)
 {
     if (str.isEmpty())
         return std::make_tuple(false, QVariant(), "Eval condition failed (empty string passed)");
@@ -216,8 +216,8 @@ std::tuple<bool, QVariant, QString> QtTIControlBlockIf::evalCond(const QString &
 //! \return
 //!
 std::tuple<bool, QVariant, QString> QtTIControlBlockIf::parseParamValue(const QString &str,
-                                                                        QtTIParserArgs *parserArgs,
-                                                                        QtTIParserFunc *parserFunc)
+                                                                        QtTIAbstractParserArgs *parserArgs,
+                                                                        QtTIAbstractParserFunc *parserFunc)
 {
     if (str.isEmpty())
         return std::make_tuple(false, QVariant(), "Parse value failed (empty string passed)");

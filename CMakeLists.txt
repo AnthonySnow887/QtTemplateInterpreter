@@ -22,22 +22,26 @@ add_library(QtTemplateInterpreter STATIC
     QtTIControlBlock/ControlBlocks/QtTIControlBlockUnset.h
     QtTIControlBlock/QtTIControlBlockFabric.h
     QtTIDefines/QtTIDefines.h
+    QtTIDefines/QtTIRegExpDefines.h
     QtTIHelperFunction/QtTIAbstractHelperFunction.h
     QtTIHelperFunction/QtTIHelperFunction.h
     QtTIHelperFunction/QtTIHelperFunctionArg.h
+    QtTIParser/Abstract/QtTIAbstractParser.h
+    QtTIParser/Abstract/QtTIAbstractParserArgs.h
+    QtTIParser/Abstract/QtTIAbstractParserBlock.h
+    QtTIParser/Abstract/QtTIAbstractParserFunc.h
     QtTIParser/BracketsExpr/QtTIBracketsNode.h
     QtTIParser/Logic/QtTIParserLogic.h
     QtTIParser/Math/QtTIMathAction.h
     QtTIParser/NullCoalescingOperator/QtTIParserNullCoalescingOperator.h
     QtTIParser/QtTIParser.h
-    QtTIParser/QtTIParserBlock.h
     QtTIParser/QtTIParserArgs.h
     QtTIParser/Math/QtTIParserMath.h
     QtTIParser/BracketsExpr/QtTIParserBracketsExpr.h
     QtTIParser/QtTIParserFunc.h
     QtTIParser/TernaryOperator/QtTIParserTernaryOperator.h
     QtTIParser/HelperClasses/RegExp.h
-    QtTemplateInterpreter.cpp
+    QtTIParser/QtTIParserBlock.h
     QtTIControlBlock/ControlBlocks/QtTIControlBlockFor.cpp
     QtTIControlBlock/ControlBlocks/QtTIControlBlockIf.cpp
     QtTIControlBlock/ControlBlocks/QtTIControlBlockSet.cpp
@@ -50,7 +54,8 @@ add_library(QtTemplateInterpreter STATIC
     QtTIParser/Math/QtTIParserMath.cpp
     QtTIParser/BracketsExpr/QtTIParserBracketsExpr.cpp
     QtTIParser/QtTIParserFunc.cpp
-    QtTIParser/TernaryOperator/QtTIParserTernaryOperator.cpp)
+    QtTIParser/TernaryOperator/QtTIParserTernaryOperator.cpp
+    QtTemplateInterpreter.cpp)
 
 target_link_libraries(QtTemplateInterpreter PRIVATE
     Qt${QT_VERSION_MAJOR}::Core)

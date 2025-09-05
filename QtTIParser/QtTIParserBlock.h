@@ -1,43 +1,38 @@
 #ifndef QTTIPARSERBLOCK_H
 #define QTTIPARSERBLOCK_H
 
+#include "Abstract/QtTIAbstractParserBlock.h"
 #include "../QtTIDefines/QtTIRegExpDefines.h"
-//#include "../QtTIControlBlock/ControlBlocks/QtTIAbstractControlBlock.h"
+#include "../QtTIControlBlock/ControlBlocks/QtTIAbstractControlBlock.h"
 
 #include <QString>
 #include <QPair>
 #include <QRegExp>
 #include <tuple>
+#include <memory>
 
-class QtTIAbstractControlBlock;
-
-class QtTIParserBlock
+class QtTIParserBlock : public QtTIAbstractParserBlock
 {
     friend class QtTIParser;
 
 public:
-    enum class Type {
-        Invalid = -1,
-        Base = 0,
-        Control,
-        Comment
-    };
-
-    QtTIParserBlock() = default;
+    QtTIParserBlock()
+        : QtTIAbstractParserBlock()
+    {}
     QtTIParserBlock(const QString &data)
-        : _data(data)
+        : QtTIAbstractParserBlock()
+        , _data(data)
     {}
     QtTIParserBlock(const QString &data,
-                    QPair<int, int> startPos,
-                    QPair<int, int> endPos)
-        : _data(data)
+                            QPair<int, int> startPos,
+                            QPair<int, int> endPos)
+        : QtTIAbstractParserBlock()
+        , _data(data)
         , _startPos(startPos)
         , _endPos(endPos)
     {}
-    ~QtTIParserBlock()
-    {
-        clear();
-    }
+    virtual ~QtTIParserBlock()
+    {}
 
     QtTIParserBlock(const QtTIParserBlock& obj) {
         _data = obj.data();
@@ -58,30 +53,30 @@ public:
         return *this;
     }
 
-    bool isValid() const {
+    bool isValid() const final {
         return (!_data.isEmpty()
-                && _startPos.first != -1
-                && _startPos.second != -1
-                && !isUnfinished()
-                && isValidExpr());
+        && _startPos.first != -1
+        && _startPos.second != -1
+        && !isUnfinished()
+        && isValidExpr());
     }
 
-    bool hasBlockStart() const {
+    bool hasBlockStart() const final {
         return (!_data.isEmpty()
-                && _startPos.first != -1
-                && _startPos.second != -1
-                && isUnfinished());
+        && _startPos.first != -1
+        && _startPos.second != -1
+        && isUnfinished());
     }
 
-    bool isUnfinished() const {
+    bool isUnfinished() const final {
         return (!_data.isEmpty()
-                && _startPos.first != -1
-                && _startPos.second != -1
-                && (_endPos.first == -1
-                    || _endPos.second == -1));
+        && _startPos.first != -1
+        && _startPos.second != -1
+        && (_endPos.first == -1
+        || _endPos.second == -1));
     }
 
-    bool isValidExpr() const {
+    bool isValidExpr() const final {
         QRegExp rx(RX_BLOCK);
         if (rx.indexIn(_data) != 0)
             return false;
@@ -92,7 +87,7 @@ public:
         return (rx.cap(1) == rx.cap(3));
     }
 
-    Type type() const {
+    Type type() const final {
         QRegExp rx(RX_BLOCK);
         if (rx.indexIn(_data) != 0)
             return Type::Invalid;
@@ -101,15 +96,15 @@ public:
         if (rx.cap(1) == "{" && rx.cap(3) == "}")
             return Type::Base;
         else if (rx.cap(1) == "%"
-                 && rx.cap(1) == rx.cap(3))
+        && rx.cap(1) == rx.cap(3))
             return Type::Control;
         else if (rx.cap(1) == "#"
-                 && rx.cap(1) == rx.cap(3))
+        && rx.cap(1) == rx.cap(3))
             return Type::Comment;
         return Type::Invalid;
     }
 
-    Type potentialType() const {
+    Type potentialType() const final {
         QRegExp rx(RX_BLOCK_START);
         if (rx.indexIn(_data) != 0)
             return Type::Invalid;
@@ -124,10 +119,10 @@ public:
         return Type::Invalid;
     }
 
-    QString data() const { return _data; }
-    const QString &data_ref() const { return _data; }
+    QString data() const final { return _data; }
+    const QString &data_ref() const final { return _data; }
 
-    QString body() const {
+    QString body() const final {
         QRegExp rx(RX_BLOCK);
         if (rx.indexIn(_data) != 0)
             return QString();
@@ -136,46 +131,28 @@ public:
         return rx.cap(2);
     }
 
-    QPair<int, int> startPos() const { return _startPos; }
-    const QPair<int, int> &startPos_ref() const { return _startPos; }
+    QPair<int, int> startPos() const final { return _startPos; }
+    const QPair<int, int> &startPos_ref() const final { return _startPos; }
 
-    QPair<int, int> endPos() const { return _endPos; }
-    const QPair<int, int> &endPos_ref() const { return _endPos; }   
+    QPair<int, int> endPos() const final { return _endPos; }
+    const QPair<int, int> &endPos_ref() const final { return _endPos; }
 
-    bool hasDataBeforeBlock() const { return _hasDataBeforeBlock; }
+    bool hasDataBeforeBlock() const final { return _hasDataBeforeBlock; }
 
-    QtTIAbstractControlBlock *controlBlock() const { return _controlBlock; }
+    std::shared_ptr<QtTIAbstractControlBlock> controlBlock() const { return _controlBlock; }
 
-//    //!
-//    //! \brief Execute control block
-//    //! \return
-//    //!
-//    std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> evalBlock() {
-//        bool isOk = false;
-//        QString res, err;
-//        std::tie(isOk, res, err) = _controlBlock->evalBlock();
-//        blockCond = curBlock->blockCondition();
-//        delete curBlock;
-//        curBlock = nullptr;
-//        if (!isOk) {
-//            QString errFull = QString("Eval control block '%1' in line %2 failed! Error: %3")
-//                              .arg(blockCond)
-//                              .arg(curBlockLine)
-//                              .arg(err);
-//            return std::make_tuple(false, "", nullptr, "", errFull);
-//        }
-//    }
-
-    void clear() {
+    virtual void clear() final {
         _data.clear();
         _startPos.first = -1;
         _startPos.second = -1;
         _endPos.first = -1;
         _endPos.second = -1;
         _hasDataBeforeBlock = true;
-        // TODO
-//        if (_controlBlock)
-//            delete _controlBlock;
+
+        if (_controlBlock) {
+            _controlBlock.reset();
+            _controlBlock = nullptr;
+        }
     }
 
 protected:
@@ -184,17 +161,13 @@ protected:
     }
 
     void setControlBlock(QtTIAbstractControlBlock *controlBlock) {
-        // TODO
-//        if (_controlBlock)
-//            delete _controlBlock;
-        _controlBlock = controlBlock;
+        _controlBlock.reset(controlBlock);
     }
 
     void setEndPos(const QPair<int, int> &endPos) {
         _endPos = endPos;
     }
 
-//private:
     QString _data;
 
     QPair<int /*line*/, int /*pos*/> _startPos {-1, -1};
@@ -202,7 +175,7 @@ protected:
 
     bool _hasDataBeforeBlock {true};
 
-    QtTIAbstractControlBlock *_controlBlock {nullptr};
+    std::shared_ptr<QtTIAbstractControlBlock> _controlBlock {nullptr};
 };
 
 #endif // QTTIPARSERBLOCK_H

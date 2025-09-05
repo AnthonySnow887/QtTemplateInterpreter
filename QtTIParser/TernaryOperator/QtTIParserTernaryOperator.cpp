@@ -50,8 +50,8 @@ bool QtTIParserTernaryOperator::isTernaryOperatorExpr(const QString &expr)
 //!         {{ ((a + aa.b) > 5 && (aa.b < 2 || aa.c >= 3)) ? (a + aa.b) }} is 12.5
 //!
 QVariant QtTIParserTernaryOperator::parseTernaryOperator(const QString &expr,
-                                                         QtTIParserArgs *parserArgs,
-                                                         QtTIParserFunc *parserFunc,
+                                                         QtTIAbstractParserArgs *parserArgs,
+                                                         QtTIAbstractParserFunc *parserFunc,
                                                          bool *isOk,
                                                          QString &error)
 {
@@ -230,8 +230,8 @@ QPair<QString, QString> QtTIParserTernaryOperator::parseLeftRight(const QString 
 //! \return
 //!
 std::tuple<bool, QVariant, QString> QtTIParserTernaryOperator::evalCond(const QString &str,
-                                                                        QtTIParserArgs *parserArgs,
-                                                                        QtTIParserFunc *parserFunc)
+                                                                        QtTIAbstractParserArgs *parserArgs,
+                                                                        QtTIAbstractParserFunc *parserFunc)
 {
     if (str.isEmpty())
         return std::make_tuple(false, QVariant(), "Eval condition failed (empty string passed)");
@@ -254,8 +254,8 @@ std::tuple<bool, QVariant, QString> QtTIParserTernaryOperator::evalCond(const QS
 //! \return
 //!
 std::tuple<bool, QVariant, QString> QtTIParserTernaryOperator::parseParamValue(const QString &str,
-                                                                               QtTIParserArgs *parserArgs,
-                                                                               QtTIParserFunc *parserFunc)
+                                                                               QtTIAbstractParserArgs *parserArgs,
+                                                                               QtTIAbstractParserFunc *parserFunc)
 {
     if (str.isEmpty())
         return std::make_tuple(false, QVariant(), "Parse value failed (empty string passed)");

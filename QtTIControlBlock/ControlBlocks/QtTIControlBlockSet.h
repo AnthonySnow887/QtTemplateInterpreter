@@ -33,8 +33,8 @@
 class QtTIControlBlockSet : public QtTIAbstractControlBlock
 {
 public:
-    QtTIControlBlockSet(QtTIParser *parser);
-    QtTIControlBlockSet(QtTIParser *parser, const QString &blockCond, const int lineNum);
+    QtTIControlBlockSet(QtTIAbstractParser *parser);
+    QtTIControlBlockSet(QtTIAbstractParser *parser, const QString &blockCond, const int lineNum);
     virtual ~QtTIControlBlockSet();
 
     QtTIAbstractControlBlock *makeBlock(const QString &blockCond, const int lineNum) final;

@@ -2,38 +2,36 @@
 #define QTTIPARSERARGS_H
 
 #include <QHash>
-#include <QString>
-#include <QVariant>
 
-class QtTIParser;
-class QtTIParserFunc;
+#include "Abstract/QtTIAbstractParserArgs.h"
+#include "Abstract/QtTIAbstractParserFunc.h"
 
-class QtTIParserArgs
+class QtTIParserArgs : public QtTIAbstractParserArgs
 {
     friend class QtTIParser;
 
 public:
     QtTIParserArgs();
-    QtTIParserArgs(QtTIParserFunc *parserFunc);
-    ~QtTIParserArgs();
+    QtTIParserArgs(QtTIAbstractParserFunc *parserFunc);
+    virtual ~QtTIParserArgs();
 
-    void appendParam(const QString &paramName, const QVariant &value);
-    void removeParam(const QString &paramName);
-    bool hasParam(const QString& paramName);
-    QVariant param(const QString& paramName);
-    void clearParams();
+    void appendParam(const QString &paramName, const QVariant &value) final;
+    void removeParam(const QString &paramName) final;
+    bool hasParam(const QString& paramName) final;
+    QVariant param(const QString& paramName) final;
+    void clearParams() final;
 
-    void appendTmpParam(const QString& paramName, const QVariant &paramValue);
-    void removeTmpParam(const QString& paramName);
-    bool hasTmpParam(const QString& paramName);
-    QVariant tmpParam(const QString& paramName);
-    void clearTmpParams();
+    void appendTmpParam(const QString& paramName, const QVariant &paramValue) final;
+    void removeTmpParam(const QString& paramName) final;
+    bool hasTmpParam(const QString& paramName) final;
+    QVariant tmpParam(const QString& paramName) final;
+    void clearTmpParams() final;
 
-    QVariantList parseHelpFunctionArgs(const QString &args, const QChar &delimiter = QChar(','));
-    QVariant prepareHelpFunctionArg(const QString &arg);
+    QVariantList parseHelpFunctionArgs(const QString &args, const QChar &delimiter = QChar(',')) final;
+    QVariant prepareHelpFunctionArg(const QString &arg) final;
 
 protected:
-    void setTIParserFunc(QtTIParserFunc *parserFunc) {
+    void setTIParserFunc(QtTIAbstractParserFunc *parserFunc) {
         _parserFunc = parserFunc;
     }
 
@@ -48,7 +46,7 @@ private:
     QVariant evalParamMethod(void *object, const QMetaObject *mObj, const QString &funcName, const QVariantList &funcArgs);
 
 private:
-    QtTIParserFunc *_parserFunc {nullptr};
+    QtTIAbstractParserFunc *_parserFunc {nullptr};
     QHash<QString, QVariant> _params;
     QHash<QString, QVariant> _tmpParams;
 };

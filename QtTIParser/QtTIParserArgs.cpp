@@ -1,7 +1,7 @@
 #include "QtTIParserArgs.h"
 #include "../QtTIDefines/QtTIDefines.h"
 #include "../QtTIDefines/QtTIRegExpDefines.h"
-#include "../QtTIParser/QtTIParserFunc.h"
+//#include "../QtTIParser/QtTIParserFunc.h"
 #include "../QtTIHelperFunction/QtTIAbstractHelperFunction.h"
 
 #include <QDebug>
@@ -12,10 +12,12 @@
 
 
 QtTIParserArgs::QtTIParserArgs()
+    : QtTIAbstractParserArgs()
 {
 }
 
-QtTIParserArgs::QtTIParserArgs(QtTIParserFunc *parserFunc)
+QtTIParserArgs::QtTIParserArgs(QtTIAbstractParserFunc *parserFunc)
+    : QtTIAbstractParserArgs()
 {
     setTIParserFunc(parserFunc);
 }
