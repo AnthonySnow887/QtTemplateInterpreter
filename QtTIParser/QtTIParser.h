@@ -31,8 +31,7 @@ public:
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseHelpParams(const QString &line, const int lineNum);
     QMap<QString, QVariant> parseAndExecHelpParams(const QString &line, const int lineNum, bool *isOk, QString &error);
 
-//    static QString lstrip(const QString& str);
-//    static QString rstrip(const QString& str);
+    std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseAndExecBlockData(QtTIAbstractParserBlock *block);
 
 private:
     QString evalHelpParam(const QString& paramName);
