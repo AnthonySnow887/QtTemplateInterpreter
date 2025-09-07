@@ -17,6 +17,8 @@ public:
     QtTIAbstractParserBlock() = default;
     virtual ~QtTIAbstractParserBlock() = default;
 
+    virtual bool isEmpty() const = 0;
+
     virtual bool isValid() const = 0;
 
     virtual bool hasBlockStart() const = 0;

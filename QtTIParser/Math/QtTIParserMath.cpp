@@ -185,9 +185,9 @@ void QtTIParserMath::parseLR(const QString &expr, QList<QtTIMathAction> *actions
         if (rxMath.captureCount() < 3)
             return;
 
-        QString condLeft = rxMath.cap(1);
-        QString condOp = rxMath.cap(2);
-        QString condRight = rxMath.cap(3);
+        QString condLeft = rxMath.cap(1).trimmed();
+        QString condOp = rxMath.cap(2).trimmed();
+        QString condRight = rxMath.cap(3).trimmed();
         QVariant condLeftVal;
         QVariant condRightVal;
         bool parseIsOk = false;

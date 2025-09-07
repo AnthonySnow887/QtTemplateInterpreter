@@ -53,6 +53,12 @@ public:
         return *this;
     }
 
+    virtual bool isEmpty() const final {
+        return (_data.isEmpty()
+        && _startPos.first == -1
+        && _startPos.second == -1);
+    }
+
     bool isValid() const final {
         return (!_data.isEmpty()
         && _startPos.first != -1
