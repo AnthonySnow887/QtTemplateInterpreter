@@ -1,10 +1,10 @@
 #include "QtTIControlBlockIf.h"
 #include "../QtTIControlBlockFabric.h"
-#include "../../QtTIParser/BracketsExpr/QtTIParserBracketsExpr.h"
-#include "../../QtTIParser/TernaryOperator/QtTIParserTernaryOperator.h"
-#include "../../QtTIParser/NullCoalescingOperator/QtTIParserNullCoalescingOperator.h"
-#include "../../QtTIParser/Logic/QtTIParserLogic.h"
-#include "../../QtTIParser/Math/QtTIParserMath.h"
+#include "../../BracketsExpr/QtTIParserBracketsExpr.h"
+#include "../../TernaryOperator/QtTIParserTernaryOperator.h"
+#include "../../NullCoalescingOperator/QtTIParserNullCoalescingOperator.h"
+#include "../../Logic/QtTIParserLogic.h"
+#include "../../Math/QtTIParserMath.h"
 
 QtTIControlBlockIf::QtTIControlBlockIf(QtTIAbstractParser *parser)
     : QtTIAbstractControlBlock(parser, -1)
@@ -182,6 +182,37 @@ void QtTIControlBlockIf::appendBlockBody(const QString &blockBody, const int lin
         default:
             break;
     }
+}
+
+void QtTIControlBlockIf::setBlockBody(const QString &blockBody, const int lineNum)
+{
+    if (_ifBody.contains(lineNum))
+        _ifBody[lineNum] = blockBody;
+    else if (_elseBody.contains(lineNum))
+        _elseBody[lineNum] = blockBody;
+    else if (!_elseIfBodys.isEmpty()) {
+        for (int i = 0; i < _elseIfBodys.size(); i++) {
+            if (_elseIfBodys[i].contains(lineNum)) {
+                _elseIfBodys[i][lineNum] = blockBody;
+                return;
+            }
+        }
+    }
+}
+
+QString QtTIControlBlockIf::blockBody(const int lineNum) const
+{
+    if (_ifBody.contains(lineNum))
+        return _ifBody.value(lineNum);
+    else if (_elseBody.contains(lineNum))
+        return _elseBody.value(lineNum);
+    else if (!_elseIfBodys.isEmpty()) {
+        for (int i = 0; i < _elseIfBodys.size(); i++) {
+            if (_elseIfBodys[i].contains(lineNum))
+            return _elseIfBodys[i].value(lineNum);
+        }
+    }
+    return QString();
 }
 
 //!

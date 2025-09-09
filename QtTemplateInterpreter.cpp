@@ -117,6 +117,7 @@ void QtTemplateInterpreter::clearParams()
 //!
 std::tuple<bool, QString, QString> QtTemplateInterpreter::interpret(QString data)
 {
+    // TODO delete this function
     QString lineEndAppender;
     if (data.indexOf("\n") != -1)
         lineEndAppender = QString("\r\n");
@@ -135,26 +136,26 @@ std::tuple<bool, QString, QString> QtTemplateInterpreter::interpret(QString data
         lineNum++;
         QString line = in.readLine() + lineEndAppender;
 
-        // remove comments
-        line = _parser->removeComments(line, &isMultilineComment);
+//        // remove comments
+//        line = _parser->removeComments(line, &isMultilineComment);
 
-        // search block
-        bool isOk = false;
-        QString error;
-        std::tie(isOk, line, block, unfinishedBlockCond, error) = _blockFabric->parseBlock(line, block, unfinishedBlockCond, lineNum);
-        if (!isOk) {
-            clear(block);
-            return std::make_tuple(false, "", error);
-        }
-        if (!unfinishedBlockCond.isEmpty() || isMultilineComment)
-            continue;
+//        // search block
+//        bool isOk = false;
+//        QString error;
+//        std::tie(isOk, line, block, unfinishedBlockCond, error) = _blockFabric->parseBlock(line, block, unfinishedBlockCond, lineNum);
+//        if (!isOk) {
+//            clear(block);
+//            return std::make_tuple(false, "", error);
+//        }
+//        if (!unfinishedBlockCond.isEmpty() || isMultilineComment)
+//            continue;
 
-        // search params & functions
-        std::tie(isOk, line, error) = _parser->parseLine(line, lineNum);
-        if (!isOk) {
-            clear(block);
-            return std::make_tuple(false, "", error);
-        }
+//        // search params & functions
+//        std::tie(isOk, line, error) = _parser->parseLine(line, lineNum);
+//        if (!isOk) {
+//            clear(block);
+//            return std::make_tuple(false, "", error);
+//        }
         tmpData += line;
     }
 

@@ -1,9 +1,9 @@
 #ifndef QTTIPARSERBLOCK_H
 #define QTTIPARSERBLOCK_H
 
-#include "Abstract/QtTIAbstractParserBlock.h"
 #include "../QtTIDefines/QtTIRegExpDefines.h"
-#include "../QtTIControlBlock/ControlBlocks/QtTIAbstractControlBlock.h"
+#include "Abstract/QtTIAbstractParserBlock.h"
+#include "ControlBlockFabric/ControlBlocks/QtTIAbstractControlBlock.h"
 
 #include <QString>
 #include <QPair>

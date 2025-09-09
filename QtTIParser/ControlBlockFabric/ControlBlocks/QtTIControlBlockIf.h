@@ -94,6 +94,8 @@ public:
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> evalBlock() final;
 
     void appendBlockBody(const QString &blockBody, const int lineNum) final;
+    void setBlockBody(const QString &blockBody, const int lineNum) final;
+    QString blockBody(const int lineNum) const final;
 
 private:
     QString _ifCond;

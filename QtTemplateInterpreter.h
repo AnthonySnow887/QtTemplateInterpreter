@@ -8,7 +8,7 @@
 
 #include "QtTemplateInterpreterVersion.h"
 #include "QtTIParser/QtTIParser.h"
-#include "QtTIControlBlock/QtTIControlBlockFabric.h"
+#include "QtTIParser/ControlBlockFabric/QtTIControlBlockFabric.h"
 
 class QtTemplateInterpreter
 {

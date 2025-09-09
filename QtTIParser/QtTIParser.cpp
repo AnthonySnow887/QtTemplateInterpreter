@@ -6,7 +6,7 @@
 #include "Logic/QtTIParserLogic.h"
 #include "TernaryOperator/QtTIParserTernaryOperator.h"
 #include "NullCoalescingOperator/QtTIParserNullCoalescingOperator.h"
-#include "../QtTIControlBlock/QtTIControlBlockFabric.h"
+#include "ControlBlockFabric/QtTIControlBlockFabric.h"
 #include "../QtTIDefines/QtTIRegExpDefines.h"
 #include "../QtTIHelperFunction/QtTIHelperFunction.h"
 
@@ -246,7 +246,8 @@ std::tuple<bool, QString, QString> QtTIParser::parseLine_v2(const QString &line,
             // eval block
             if (rBlock->type() == QtTIParserBlock::Type::Base) {
                 bool isOk = false;
-                QString res, err;
+                QVariant res;
+                QString err;
                 std::tie(isOk, res, err) = parseAndExecBlockData(rBlock);
                 if (!isOk) {
                     QString errFull = QString("Eval control block '%1' in line %2 failed! Error: %3")
@@ -262,7 +263,7 @@ std::tuple<bool, QString, QString> QtTIParser::parseLine_v2(const QString &line,
                 // clear block object
                 rBlock->clear();
                 // add to tmpLine
-                tmpLine += res;
+                tmpLine += res.toString();
             } else if (rBlock->type() == QtTIParserBlock::Type::Control
                        && isBlockCondEnd) {
                 bool isOk = false;
@@ -645,61 +646,71 @@ QMap<QString, QVariant> QtTIParser::parseAndExecHelpParams(const QString &line, 
     return tmpRes;
 }
 
-std::tuple<bool, QString, QString> QtTIParser::parseAndExecBlockData(QtTIAbstractParserBlock *block)
+std::tuple<bool, QVariant, QString> QtTIParser::parseAndExecBlockData(QtTIAbstractParserBlock *block)
 {
     if (!block || !block->isValid())
-        return std::make_tuple(false, "", "Invalid block object!");
+        return std::make_tuple(false, QVariant(), "Invalid block object!");
+
+    return parseAndExecBlockData(block->body(), block->startPos_ref());
+}
+
+std::tuple<bool, QVariant, QString> QtTIParser::parseAndExecBlockData(const QString &data, const QPair<int, int> &startPos)
+{
+    if (data.isEmpty())
+        return std::make_tuple(false, QVariant(), "Block data is Empty!");
+    if (startPos.first == -1 || startPos.second == -1)
+        return std::make_tuple(false, QVariant(), "Invalid block data position!");
 
     // check condition
     QVariant resultValue;
-    if (QtTIParserTernaryOperator::isTernaryOperatorExpr(block->body())) {
+    if (QtTIParserTernaryOperator::isTernaryOperatorExpr(data)) {
         bool calcIsOk = false;
         QString calcErr;
-        const QVariant calcRes = QtTIParserTernaryOperator::parseTernaryOperator(block->body(), &_parserArgs, &_parserFunc, &calcIsOk, calcErr);
+        const QVariant calcRes = QtTIParserTernaryOperator::parseTernaryOperator(data, &_parserArgs, &_parserFunc, &calcIsOk, calcErr);
         if (!calcIsOk) {
-            const QString error = QString("%1 in line %2").arg(calcErr).arg(block->startPos().first);
-            return std::make_tuple(false, "", error);
+            const QString error = QString("%1 in line %2").arg(calcErr).arg(startPos.first);
+            return std::make_tuple(false, QVariant(), error);
         }
         resultValue = calcRes;
 
-    } else if (QtTIParserNullCoalescingOperator::isNullCoalescingOperatorExpr(block->body())) {
+    } else if (QtTIParserNullCoalescingOperator::isNullCoalescingOperatorExpr(data)) {
         bool calcIsOk = false;
         QString calcErr;
-        const QVariant calcRes = QtTIParserNullCoalescingOperator::parseNullCoalescingOperator(block->body(), &_parserArgs, &_parserFunc, &calcIsOk, calcErr);
+        const QVariant calcRes = QtTIParserNullCoalescingOperator::parseNullCoalescingOperator(data, &_parserArgs, &_parserFunc, &calcIsOk, calcErr);
         if (!calcIsOk) {
-            const QString error = QString("%1 in line %2").arg(calcErr).arg(block->startPos().first);
-            return std::make_tuple(false, "", error);
+            const QString error = QString("%1 in line %2").arg(calcErr).arg(startPos.first);
+            return std::make_tuple(false, QVariant(), error);
         }
         resultValue = calcRes;
 
-    } else if (QtTIParserLogic::isLogicExpr(block->body())) {
+    } else if (QtTIParserLogic::isLogicExpr(data)) {
         bool calcIsOk = false;
         QString calcErr;
-        const QVariant calcRes = QtTIParserLogic::parseLogic(block->body(), &_parserArgs, &_parserFunc, &calcIsOk, calcErr);
+        const QVariant calcRes = QtTIParserLogic::parseLogic(data, &_parserArgs, &_parserFunc, &calcIsOk, calcErr);
         if (!calcIsOk) {
-            const QString error = QString("%1 in line %2").arg(calcErr).arg(block->startPos().first);
-            return std::make_tuple(false, "", error);
+            const QString error = QString("%1 in line %2").arg(calcErr).arg(startPos.first);
+            return std::make_tuple(false, QVariant(), error);
         }
         resultValue = calcRes;
 
-    } else if (QtTIParserMath::isMathExpr(block->body())) {
+    } else if (QtTIParserMath::isMathExpr(data)) {
         bool calcIsOk = false;
         QString calcErr;
-        const QVariant calcRes = QtTIParserMath::parseMath(block->body(), &_parserArgs, &_parserFunc, &calcIsOk, calcErr);
+        const QVariant calcRes = QtTIParserMath::parseMath(data, &_parserArgs, &_parserFunc, &calcIsOk, calcErr);
         if (!calcIsOk) {
-            const QString error = QString("%1 in line %2").arg(calcErr).arg(block->startPos().first);
-            return std::make_tuple(false, "", error);
+            const QString error = QString("%1 in line %2").arg(calcErr).arg(startPos.first);
+            return std::make_tuple(false, QVariant(), error);
         }
         resultValue = calcRes;
 
     } else {
-        resultValue = _parserArgs.prepareHelpFunctionArg(block->body());
+        resultValue = _parserArgs.prepareHelpFunctionArg(data);
         if (!resultValue.isValid()) {
-            const QString error = QString("Unsupported help parameter '%1' in line %2").arg(block->body()).arg(block->startPos().first);
-            return std::make_tuple(false, "", error);
+            const QString error = QString("Unsupported help parameter '%1' in line %2").arg(data).arg(startPos.first);
+            return std::make_tuple(false, QVariant(), error);
         }
     }
-    return std::make_tuple(true, resultValue.toString(), "");
+    return std::make_tuple(true, resultValue, "");
 }
 
 //!

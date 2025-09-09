@@ -6,6 +6,7 @@
 #include "QtTIAbstractParserBlock.h"
 
 #include <QString>
+#include <QVariant>
 
 class QtTIAbstractParser
 {
@@ -22,6 +23,11 @@ public:
     virtual std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseLine_v2(const QString &line,
                                                                                 const int lineNum,
                                                                                 QtTIAbstractParserBlock *&block) = 0;
+
+    virtual std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseAndExecBlockData(QtTIAbstractParserBlock *block) = 0;
+
+    virtual std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseAndExecBlockData(const QString &data,
+                                                                                          const QPair<int, int> &startPos) = 0;
 
     static QString lstrip(const QString &str) {
         int n = 0;

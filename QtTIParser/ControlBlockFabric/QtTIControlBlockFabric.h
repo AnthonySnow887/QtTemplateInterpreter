@@ -16,15 +16,6 @@ public:
 
     QtTIAbstractControlBlock *createBlock(const QString &blockCond, const int lineNum);
 
-    std::tuple<bool/*isOk*/,
-               QString/*res*/,
-               QtTIAbstractControlBlock*/*curBlock*/,
-               QString/*unfinishedBlockCond*/,
-               QString/*err*/> parseBlock(const QString &line,
-                                          QtTIAbstractControlBlock *block,
-                                          const QString &unfinishedBlockCond,
-                                          const int lineNum);
-
 private:
     QtTIAbstractParser *_parser {nullptr};
     QList<QtTIAbstractControlBlock*> _blocks;
