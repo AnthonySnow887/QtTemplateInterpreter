@@ -22,7 +22,7 @@ public:
     void clearFunctions() final;
 
 private:
-    QMultiHash<QString, const QtTIAbstractHelperFunction *> _functions;
+    QMultiHash<QString, const QtTIAbstractHelperFunction *> _functions; //!< functions array
 };
 
 #endif // QTTIPARSERFUNC_H

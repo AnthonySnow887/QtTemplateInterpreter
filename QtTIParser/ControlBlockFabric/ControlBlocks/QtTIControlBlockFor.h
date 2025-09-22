@@ -49,10 +49,15 @@ class QtTIControlBlockFor : public QtTIAbstractControlBlock
 {
 public:
     QtTIControlBlockFor(QtTIAbstractParser *parser);
-    QtTIControlBlockFor(QtTIAbstractParser *parser, const QString &blockCond, const int lineNum);
+    QtTIControlBlockFor(QtTIAbstractParser *parser,
+                        const QString &blockCond,
+                        const int lineNum,
+                        const int linePos);
     virtual ~QtTIControlBlockFor();
 
-    QtTIAbstractControlBlock *makeBlock(const QString &blockCond, const int lineNum) final;
+    QtTIAbstractControlBlock *makeBlock(const QString &blockCond,
+                                        const int lineNum,
+                                        const int linePos) final;
     QString blockCondition() const final;
     bool isBlockCondStart(const QString &blockCond) final;
     bool isBlockCondEnd(const QString &blockCond) final;

@@ -1087,6 +1087,7 @@ void QtTIParserFunc::removeHelpFunction(const QString &funcName, const QVariantL
 //! \brief Check has help function found
 //! \param funcName Function name
 //! \param args Function arguments
+//! \param strictArgs Use strong typing of function arguments without converting them
 //! \return
 //!
 bool QtTIParserFunc::hasHelpFunction(const QString &funcName, const QVariantList &args, const bool strictArgs) const
@@ -1098,6 +1099,7 @@ bool QtTIParserFunc::hasHelpFunction(const QString &funcName, const QVariantList
 //! \brief Find help function by name and arguments
 //! \param funcName Function name
 //! \param args Function argumnets
+//! \param strictArgs Use strong typing of function arguments without converting them
 //! \return
 //!
 const QtTIAbstractHelperFunction *QtTIParserFunc::findHelpFunction(const QString &funcName, const QVariantList &args, const bool strictArgs) const
@@ -1125,6 +1127,7 @@ const QtTIAbstractHelperFunction *QtTIParserFunc::findHelpFunction(const QString
 //! \brief Execute help function
 //! \param funcName Function name
 //! \param args Function arguments
+//! \param strictArgs Use strong typing of function arguments without converting them
 //! \return
 //!
 std::tuple<bool, QVariant, QString> QtTIParserFunc::evalHelpFunction(const QString &funcName, const QVariantList &args, const bool strictArgs) const

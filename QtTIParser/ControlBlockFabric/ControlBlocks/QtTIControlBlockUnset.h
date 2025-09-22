@@ -16,10 +16,15 @@ class QtTIControlBlockUnset : public QtTIAbstractControlBlock
 {
 public:
     QtTIControlBlockUnset(QtTIAbstractParser *parser);
-    QtTIControlBlockUnset(QtTIAbstractParser *parser, const QString &blockCond, const int lineNum);
+    QtTIControlBlockUnset(QtTIAbstractParser *parser,
+                          const QString &blockCond,
+                          const int lineNum,
+                          const int linePos);
     virtual ~QtTIControlBlockUnset();
 
-    QtTIAbstractControlBlock *makeBlock(const QString &blockCond, const int lineNum) final;
+    QtTIAbstractControlBlock *makeBlock(const QString &blockCond,
+                                        const int lineNum,
+                                        const int linePos) final;
     QString blockCondition() const final;
     bool isBlockCondStart(const QString &blockCond) final;
     bool isBlockCondEnd(const QString &blockCond) final;

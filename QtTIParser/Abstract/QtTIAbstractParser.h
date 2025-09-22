@@ -14,21 +14,50 @@ public:
     QtTIAbstractParser() = default;
     virtual ~QtTIAbstractParser() = default;
 
+    //!
+    //! \brief Select parser args object pointer
+    //! \return
+    //!
     virtual QtTIAbstractParserArgs *parserArgs() = 0;
+
+    //!
+    //! \brief Select parser func object pointer
+    //! \return
+    //!
     virtual QtTIAbstractParserFunc *parserFunc() = 0;
 
-    // TODO delete!
-    virtual std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseLine(const QString &line, const int lineNum) = 0;
+    //!
+    //! \brief Parse line data (parse help functions and help parameters)
+    //! \param line Line data
+    //! \param lineNum Line number
+    //! \param block Abstract parser block object
+    //! \return
+    //!
+    virtual std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseLine(const QString &line,
+                                                                             const int lineNum,
+                                                                             QtTIAbstractParserBlock *&block) = 0;
 
-    virtual std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseLine_v2(const QString &line,
-                                                                                const int lineNum,
-                                                                                QtTIAbstractParserBlock *&block) = 0;
-
+    //!
+    //! \brief Parse and execute abstract block data
+    //! \param block Abstract parser block object
+    //! \return
+    //!
     virtual std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseAndExecBlockData(QtTIAbstractParserBlock *block) = 0;
 
+    //!
+    //! \brief Parse and execute abstract block data
+    //! \param data Parser block data
+    //! \param startPos Parser block start position in line
+    //! \return
+    //!
     virtual std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseAndExecBlockData(const QString &data,
                                                                                           const QPair<int, int> &startPos) = 0;
 
+    //!
+    //! \brief Trim the line on the left
+    //! \param str String
+    //! \return
+    //!
     static QString lstrip(const QString &str) {
         int n = 0;
         for (; n < str.size(); ++n) {
@@ -38,6 +67,11 @@ public:
         return QString();
     }
 
+    //!
+    //! \brief Trim the line on the right
+    //! \param str String
+    //! \return
+    //!
     static QString rstrip(const QString &str) {
         int n = str.size() - 1;
         for (; n >= 0; --n) {

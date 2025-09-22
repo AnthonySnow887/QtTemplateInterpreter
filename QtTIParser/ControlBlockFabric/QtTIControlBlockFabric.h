@@ -14,7 +14,9 @@ public:
     explicit QtTIControlBlockFabric(QtTIAbstractParser *parser);
     ~QtTIControlBlockFabric();
 
-    QtTIAbstractControlBlock *createBlock(const QString &blockCond, const int lineNum);
+    QtTIAbstractControlBlock *createBlock(const QString &blockCond,
+                                          const int lineNum,
+                                          const int linePos);
 
 private:
     QtTIAbstractParser *_parser {nullptr};

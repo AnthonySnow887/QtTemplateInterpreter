@@ -6,12 +6,10 @@
 QtTemplateInterpreter::QtTemplateInterpreter()
 {
     _parser = new QtTIParser();
-    _blockFabric = new QtTIControlBlockFabric(_parser);
 }
 
 QtTemplateInterpreter::~QtTemplateInterpreter()
 {
-    delete _blockFabric;
     delete _parser;
 }
 
@@ -117,16 +115,13 @@ void QtTemplateInterpreter::clearParams()
 //!
 std::tuple<bool, QString, QString> QtTemplateInterpreter::interpret(QString data)
 {
-    // TODO delete this function
     QString lineEndAppender;
     if (data.indexOf("\n") != -1)
         lineEndAppender = QString("\r\n");
 
     QTextStream in(&data);
     int lineNum = 0;
-    bool isMultilineComment = false;
-    QtTIAbstractControlBlock *block = nullptr;
-    QString unfinishedBlockCond;
+    QtTIAbstractParserBlock *block = nullptr;
     QString tmpData;
     while (!in.atEnd()) {
         if (!tmpData.isEmpty()
@@ -135,33 +130,21 @@ std::tuple<bool, QString, QString> QtTemplateInterpreter::interpret(QString data
 
         lineNum++;
         QString line = in.readLine() + lineEndAppender;
-
-//        // remove comments
-//        line = _parser->removeComments(line, &isMultilineComment);
-
-//        // search block
-//        bool isOk = false;
-//        QString error;
-//        std::tie(isOk, line, block, unfinishedBlockCond, error) = _blockFabric->parseBlock(line, block, unfinishedBlockCond, lineNum);
-//        if (!isOk) {
-//            clear(block);
-//            return std::make_tuple(false, "", error);
-//        }
-//        if (!unfinishedBlockCond.isEmpty() || isMultilineComment)
-//            continue;
-
-//        // search params & functions
-//        std::tie(isOk, line, error) = _parser->parseLine(line, lineNum);
-//        if (!isOk) {
-//            clear(block);
-//            return std::make_tuple(false, "", error);
-//        }
+        bool isOk = false;
+        QString error;
+        std::tie(isOk, line, error) = _parser->parseLine(line, lineNum, block);
+        if (!isOk) {
+            clear(block);
+            return std::make_tuple(false, "", error);
+        }
         tmpData += line;
     }
 
     // check block
-    if (block) {
-        QString error = QString("Unfinished block in line %1!").arg(block->lineNum());
+    if (block && block->isUnfinished()) {
+        QString error = QString("Unfinished block in line %1 (position %2)!")
+                        .arg(block->startPos().first)
+                        .arg(block->startPos().second);
         clear(block);
         return std::make_tuple(false, "", error);
     }
@@ -185,44 +168,6 @@ QString QtTemplateInterpreter::interpretRes(QString data)
     if (!isOk)
         qCritical() << qPrintable(QString("[QtTemplateInterpreter][interpretRes] %1").arg(error));
     return result;
-}
-
-std::tuple<bool, QString, QString> QtTemplateInterpreter::interpret_v2(QString data)
-{
-    QString lineEndAppender;
-    if (data.indexOf("\n") != -1)
-        lineEndAppender = QString("\r\n");
-
-    QTextStream in(&data);
-    int lineNum = 0;
-    QtTIAbstractParserBlock *block = nullptr;
-    QString tmpData;
-    while (!in.atEnd()) {
-        if (!tmpData.isEmpty()
-            && tmpData[tmpData.size() - 1] != '\n')
-            tmpData += "\r\n";
-
-        lineNum++;
-        QString line = in.readLine() + lineEndAppender;
-        bool isOk = false;
-        QString error;
-        std::tie(isOk, line, error) = _parser->parseLine_v2(line, lineNum, block);
-        if (!isOk) {
-            clear(block);
-            return std::make_tuple(false, "", error);
-        }
-        tmpData += line;
-    }
-
-    // check block
-    if (block && block->isUnfinished()) {
-        QString error = QString("Unfinished block in line %1!").arg(block->startPos().first);
-        clear(block);
-        return std::make_tuple(false, "", error);
-    }
-
-    clear(block);
-    return std::make_tuple(true, tmpData, "");
 }
 
 //!
@@ -264,16 +209,9 @@ QString QtTemplateInterpreter::interpretResFromFile(const QString &path)
 
 //!
 //! \brief Clear all tmp data
-//! \param block Control block pointer
+//! \param block Abstract parser block pointer
 //! \private
 //!
-void QtTemplateInterpreter::clear(QtTIAbstractControlBlock *block)
-{
-    _parser->parserArgs()->clearTmpParams();
-    if (block)
-        delete block;
-}
-
 void QtTemplateInterpreter::clear(QtTIAbstractParserBlock *block)
 {
     _parser->parserArgs()->clearTmpParams();

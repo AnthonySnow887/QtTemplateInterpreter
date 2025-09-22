@@ -24,13 +24,16 @@ QtTIControlBlockFabric::~QtTIControlBlockFabric()
 //! \brief Create control block by block condition
 //! \param blockCond Control block condition
 //! \param lineNum Line number
+//! \param linePos Position number in line
 //! \return
 //!
-QtTIAbstractControlBlock *QtTIControlBlockFabric::createBlock(const QString &blockCond, const int lineNum)
+QtTIAbstractControlBlock *QtTIControlBlockFabric::createBlock(const QString &blockCond,
+                                                              const int lineNum,
+                                                              const int linePos)
 {
     for (QtTIAbstractControlBlock *b : qAsConst(_blocks)) {
         if (b->isBlockCondStart(blockCond))
-            return b->makeBlock(blockCond, lineNum);
+            return b->makeBlock(blockCond, lineNum, linePos);
     }
     return nullptr;
 }

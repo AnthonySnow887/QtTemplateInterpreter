@@ -46,9 +46,9 @@ private:
     QVariant evalParamMethod(void *object, const QMetaObject *mObj, const QString &funcName, const QVariantList &funcArgs);
 
 private:
-    QtTIAbstractParserFunc *_parserFunc {nullptr};
-    QHash<QString, QVariant> _params;
-    QHash<QString, QVariant> _tmpParams;
+    QtTIAbstractParserFunc *_parserFunc {nullptr};  //!< parser func object pointer
+    QHash<QString, QVariant> _params;       //!< params array
+    QHash<QString, QVariant> _tmpParams;    //!< tmp params array
 };
 
 #endif // QTTIPARSERARGS_H

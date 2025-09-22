@@ -1,7 +1,6 @@
 #include "QtTIParserArgs.h"
 #include "../QtTIDefines/QtTIDefines.h"
 #include "../QtTIDefines/QtTIRegExpDefines.h"
-//#include "../QtTIParser/QtTIParserFunc.h"
 #include "../QtTIHelperFunction/QtTIAbstractHelperFunction.h"
 
 #include <QDebug>

@@ -8,7 +8,6 @@
 
 #include "QtTemplateInterpreterVersion.h"
 #include "QtTIParser/QtTIParser.h"
-#include "QtTIParser/ControlBlockFabric/QtTIControlBlockFabric.h"
 
 class QtTemplateInterpreter
 {
@@ -28,16 +27,12 @@ public:
     std::tuple<bool/*isOk*/,QString/*result*/,QString/*error*/> interpret(QString data);
     QString interpretRes(QString data);
 
-    std::tuple<bool/*isOk*/,QString/*result*/,QString/*error*/> interpret_v2(QString data);
-
     std::tuple<bool/*isOk*/,QString/*result*/,QString/*error*/> interpretFromFile(const QString &path);
     QString interpretResFromFile(const QString &path);
 
 private:
     QtTIParser *_parser {nullptr};                      //!< data parser
-    QtTIControlBlockFabric *_blockFabric {nullptr};     //!< control blocks fabric
 
-    void clear(QtTIAbstractControlBlock *block);
     void clear(QtTIAbstractParserBlock *block);
 };
 

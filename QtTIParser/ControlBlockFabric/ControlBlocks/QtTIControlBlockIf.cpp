@@ -7,11 +7,14 @@
 #include "../../Math/QtTIParserMath.h"
 
 QtTIControlBlockIf::QtTIControlBlockIf(QtTIAbstractParser *parser)
-    : QtTIAbstractControlBlock(parser, -1)
+    : QtTIAbstractControlBlock(parser, -1, -1)
 {}
 
-QtTIControlBlockIf::QtTIControlBlockIf(QtTIAbstractParser *parser, const QString &blockCond, const int lineNum)
-    : QtTIAbstractControlBlock(parser, lineNum)
+QtTIControlBlockIf::QtTIControlBlockIf(QtTIAbstractParser *parser,
+                                       const QString &blockCond,
+                                       const int lineNum,
+                                       const int linePos)
+    : QtTIAbstractControlBlock(parser, lineNum, linePos)
     , _ifCond(blockCond)
 {}
 
@@ -25,9 +28,11 @@ QtTIControlBlockIf::~QtTIControlBlockIf()
 //! \param lineNum Line number
 //! \return
 //!
-QtTIAbstractControlBlock *QtTIControlBlockIf::makeBlock(const QString &blockCond, const int lineNum)
+QtTIAbstractControlBlock *QtTIControlBlockIf::makeBlock(const QString &blockCond,
+                                                        const int lineNum,
+                                                        const int linePos)
 {
-    return new QtTIControlBlockIf(parser(), blockCond, lineNum);
+    return new QtTIControlBlockIf(parser(), blockCond, lineNum, linePos);
 }
 
 //!
@@ -184,6 +189,11 @@ void QtTIControlBlockIf::appendBlockBody(const QString &blockBody, const int lin
     }
 }
 
+//!
+//! \brief Set control block body
+//! \param blockBody Control block body
+//! \param lineNum Control block body line number
+//!
 void QtTIControlBlockIf::setBlockBody(const QString &blockBody, const int lineNum)
 {
     if (_ifBody.contains(lineNum))
@@ -200,6 +210,11 @@ void QtTIControlBlockIf::setBlockBody(const QString &blockBody, const int lineNu
     }
 }
 
+//!
+//! \brief Get control block body
+//! \param lineNum Control block body line number
+//! \return
+//!
 QString QtTIControlBlockIf::blockBody(const int lineNum) const
 {
     if (_ifBody.contains(lineNum))

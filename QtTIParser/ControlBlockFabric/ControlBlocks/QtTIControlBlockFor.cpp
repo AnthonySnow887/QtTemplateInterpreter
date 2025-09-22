@@ -5,11 +5,14 @@
 #include <QHash>
 
 QtTIControlBlockFor::QtTIControlBlockFor(QtTIAbstractParser *parser)
-    : QtTIAbstractControlBlock(parser, -1)
+    : QtTIAbstractControlBlock(parser, -1, -1)
 {}
 
-QtTIControlBlockFor::QtTIControlBlockFor(QtTIAbstractParser *parser, const QString &blockCond, const int lineNum)
-    : QtTIAbstractControlBlock(parser, lineNum)
+QtTIControlBlockFor::QtTIControlBlockFor(QtTIAbstractParser *parser,
+                                         const QString &blockCond,
+                                         const int lineNum,
+                                         const int linePos)
+    : QtTIAbstractControlBlock(parser, lineNum, linePos)
     , _blockCond(blockCond)
 {}
 
@@ -22,9 +25,11 @@ QtTIControlBlockFor::~QtTIControlBlockFor()
 //! \param lineNum Line number
 //! \return
 //!
-QtTIAbstractControlBlock *QtTIControlBlockFor::makeBlock(const QString &blockCond, const int lineNum)
+QtTIAbstractControlBlock *QtTIControlBlockFor::makeBlock(const QString &blockCond,
+                                                         const int lineNum,
+                                                         const int linePos)
 {
-    return new QtTIControlBlockFor(parser(), blockCond, lineNum);
+    return new QtTIControlBlockFor(parser(), blockCond, lineNum, linePos);
 }
 
 //!
@@ -68,11 +73,21 @@ void QtTIControlBlockFor::appendBlockBody(const QString &blockBody, const int li
     _blockBody[lineNum].append(blockBody);
 }
 
+//!
+//! \brief Set control block body
+//! \param blockBody Control block body
+//! \param lineNum Control block body line number
+//!
 void QtTIControlBlockFor::setBlockBody(const QString &blockBody, const int lineNum)
 {
     _blockBody[lineNum] = blockBody;
 }
 
+//!
+//! \brief Get control block body
+//! \param lineNum Control block body line number
+//! \return
+//!
 QString QtTIControlBlockFor::blockBody(const int lineNum) const
 {
     return _blockBody[lineNum];
@@ -91,7 +106,7 @@ std::tuple<bool, QString, QString> QtTIControlBlockFor::evalBlock()
         bool isOk = false;
         QVariant paramValue;
         QString error;
-        std::tie(isOk, paramValue, error) = parseParamValue(rx.cap(3).trimmed());
+        std::tie(isOk, paramValue, error) = parseParamValue(rx.cap(3).trimmed(), lineNum(), linePos());
         if (!isOk)
             return std::make_tuple(false, "", error);
         if (paramNames.isEmpty())

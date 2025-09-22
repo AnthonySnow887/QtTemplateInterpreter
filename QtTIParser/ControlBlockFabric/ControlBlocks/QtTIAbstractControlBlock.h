@@ -24,8 +24,9 @@ public:
     //! \param parser QtTIParser pointer
     //! \param lineNum Line number
     //!
-    QtTIAbstractControlBlock(QtTIAbstractParser *parser, const int lineNum)
+    QtTIAbstractControlBlock(QtTIAbstractParser *parser, const int lineNum, const int linePos)
         : _lineNum(lineNum)
+        , _linePos(linePos)
         , _parser(parser)
     {}
 
@@ -42,12 +43,21 @@ public:
     }
 
     //!
+    //! \brief Get control block position number in line
+    //! \return
+    //!
+    int linePos() const {
+        return _linePos;
+    }
+
+    //!
     //! \brief Make control block
     //! \param blockCond Control block condition
     //! \param lineNum Line number
+    //! \param linePos Position number in line
     //! \return
     //!
-    virtual QtTIAbstractControlBlock *makeBlock(const QString &blockCond, const int lineNum) = 0;
+    virtual QtTIAbstractControlBlock *makeBlock(const QString &blockCond, const int lineNum, const int linePos) = 0;
 
     //!
     //! \brief Get control block condition
@@ -104,11 +114,21 @@ public:
         Q_UNUSED(lineNum)
     }
 
+    //!
+    //! \brief Set control block body
+    //! \param blockBody Control block body
+    //! \param lineNum Control block body line number
+    //!
     virtual void setBlockBody(const QString &blockBody, const int lineNum) {
         Q_UNUSED(blockBody)
         Q_UNUSED(lineNum)
     }
 
+    //!
+    //! \brief Get control block body
+    //! \param lineNum Control block body line number
+    //! \return
+    //!
     virtual QString blockBody(const int lineNum) const {
         Q_UNUSED(lineNum)
         return QString();
@@ -147,7 +167,7 @@ protected:
             // parse
             bool isOk = false;
             QString error;
-            std::tie(isOk, line, error) = _parser->parseLine_v2(line, lineNum, block);
+            std::tie(isOk, line, error) = _parser->parseLine(line, lineNum, block);
             if (!isOk) {
                 if (block)
                     delete block;
@@ -189,7 +209,7 @@ protected:
             // parse
             bool isOk = false;
             QString error;
-            std::tie(isOk, line, error) = _parser->parseLine_v2(line, it.key(), block);
+            std::tie(isOk, line, error) = _parser->parseLine(line, it.key(), block);
             if (!isOk) {
                 if (block)
                     delete block;
@@ -213,17 +233,20 @@ protected:
     //! \param str Parameter value string view
     //! \return
     //!
-    std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseParamValue(const QString &str)
+    std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseParamValue(const QString &str,
+                                                                            const int lineNum,
+                                                                            const int linePos)
     {
         if (str.isEmpty())
             return std::make_tuple(false, QVariant(), "Parse value failed (empty string passed)");
 
-        return _parser->parseAndExecBlockData(str, {0, 0}); // TODO QPair
+        return _parser->parseAndExecBlockData(str, {lineNum, linePos});
     }
 
 private:
     int _lineNum {-1};                                  //!< control block line number
-    QtTIAbstractParser *_parser {nullptr};              //!< parser point
+    int _linePos {-1};                                  //!< control block position number in line
+    QtTIAbstractParser *_parser {nullptr};              //!< parser pointer
 };
 
 #endif // QTTIABSTRACTCONTROLBLOCK_H

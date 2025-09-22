@@ -82,10 +82,15 @@ public:
     };
 
     QtTIControlBlockIf(QtTIAbstractParser *parser);
-    QtTIControlBlockIf(QtTIAbstractParser *parser, const QString &blockCond, const int lineNum);
+    QtTIControlBlockIf(QtTIAbstractParser *parser,
+                       const QString &blockCond,
+                       const int lineNum,
+                       const int linePos);
     virtual ~QtTIControlBlockIf();
 
-    QtTIAbstractControlBlock *makeBlock(const QString &blockCond, const int lineNum) final;
+    QtTIAbstractControlBlock *makeBlock(const QString &blockCond,
+                                        const int lineNum,
+                                        const int linePos) final;
     QString blockCondition() const final;
     bool isBlockCondStart(const QString &blockCond) final;
     bool isBlockCondIntermediate(const QString &blockCond) final;
