@@ -71,7 +71,9 @@ std::tuple<bool, QString, QString> QtTIParser::parseLine(const QString &line,
             chNext = line[i + 1];
 
         // check is string
-        if (ch == '"' || ch == '\'')
+        if ((ch == '"' || ch == '\'')
+            && chPrev != '\\'
+            && isBlock)
             isString = !isString;
 
         // check start block
