@@ -118,12 +118,12 @@ The first is used to perform various block operations, such as a for loop. The s
 >
 > NOTE:
 >
-> If you want a block to not be executed and remain unchanged, you should specify the ``` rv ``` directive before the block:
+> If you want the contents of a block to not be executed and remain unchanged, you should enclose the contents of the block in quotes (single ``` ' ``` or double ``` " ```):
 >
 > ```twig
-> rv{{ my_function() }} -> print {{ my_function() }}
-> rv{{ my_value }}      -> print {{ my_value }}
-> rv{{ my_value.item }} -> print {{ my_value.item }}
+> {{ "{{ my_function() }}" }} {# -> print {{ my_function() }} #}
+> {{ "{{ my_value }}" }}      {# -> print {{ my_value }} #}
+> {{ "{{ my_value.item }}" }} {# -> print {{ my_value.item }} #}
 > ```
 >
 
