@@ -483,8 +483,7 @@ tb.appendHelpParam("my_test", QVariant::fromValue(new MyClass("this is my test n
 ```twig
 {% set rx = make_reg_exp('my_key_(\d+)') %}
 {% if rx.index_in('my_key_123', 0) != -1 %}
-{% set rx_cap = rx.cap(1) %}
-RegExp cap value: {{ rx_cap }}
+RegExp cap value: {{ rx.cap(1) }}
 {% else %}
 RegExp cap value: Not Found
 {% endif %}
