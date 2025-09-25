@@ -63,6 +63,12 @@ public:
     virtual Type potentialType() const = 0;
 
     //!
+    //! \brief Get end control symbol for block (' } ', ' # ', ' % ')
+    //! \return
+    //!
+    virtual QChar endControlSymbol() const = 0;
+
+    //!
     //! \brief Get block data (including control characters)
     //! \return
     //!

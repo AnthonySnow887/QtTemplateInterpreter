@@ -149,6 +149,24 @@ public:
     }
 
     //!
+    //! \brief Get end control symbol for block (' } ', ' # ', ' % ')
+    //! \return
+    //!
+    QChar endControlSymbol() const final {
+        switch (potentialType()) {
+            case Type::Base:
+                return QChar('}');
+            case Type::Control:
+                return QChar('%');
+            case Type::Comment:
+                return QChar('#');
+            default:
+                break;
+        }
+        return QChar();
+    }
+
+    //!
     //! \brief Get block data (including control characters)
     //! \return
     //!

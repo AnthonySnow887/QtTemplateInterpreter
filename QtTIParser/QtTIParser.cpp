@@ -91,12 +91,18 @@ std::tuple<bool, QString, QString> QtTIParser::parseLine(const QString &line,
             continue;
         }
         // check end block
+        QChar blockEndControlSymbol = tmpBlock.endControlSymbol();
+        if (rBlock
+            && rBlock->isUnfinished())
+            blockEndControlSymbol = rBlock->endControlSymbol();
+
         if (!isString
             && isBlock
             && ch == '}'
             && (chPrev == '}'
                 || chPrev == '%'
-                || chPrev == '#')) {
+                || chPrev == '#')
+            && chPrev == blockEndControlSymbol) {
             tmpBlock._data += ch;
             tmpBlock._endPos.first = lineNum;
             tmpBlock._endPos.second = chPos;
