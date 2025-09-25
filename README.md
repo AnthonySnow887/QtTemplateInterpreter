@@ -174,7 +174,7 @@ The interpreter passes variables to templates for further manipulation in the te
 > When accessing variables inside tags, don't put the braces around them.
 >
 
-If the variable or attribute does not exist, NULL will be returned, which will be converted to the empty string when printed in the template.
+If a variable or attribute does not exist, a template parsing error will be raised with its detailed description.
 
 >
 > NOTE:
