@@ -5,8 +5,8 @@
 #include <QVariant>
 #include <QPair>
 
-#include "../QtTIParserArgs.h"
-#include "../QtTIParserFunc.h"
+#include "../Abstract/QtTIAbstractParserArgs.h"
+#include "../Abstract/QtTIAbstractParserFunc.h"
 
 class QtTIParserTernaryOperator
 {
@@ -16,8 +16,8 @@ public:
 
     static bool isTernaryOperatorExpr(const QString &expr);
     static QVariant parseTernaryOperator(const QString &expr,
-                                         QtTIParserArgs *parserArgs,
-                                         QtTIParserFunc *parserFunc,
+                                         QtTIAbstractParserArgs *parserArgs,
+                                         QtTIAbstractParserFunc *parserFunc,
                                          bool *isOk,
                                          QString &error);
 
@@ -25,12 +25,12 @@ private:
     static QPair<QString, QString> parseLeftRight(const QString &str);
 
     static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> evalCond(const QString &str,
-                                                                            QtTIParserArgs *parserArgs,
-                                                                            QtTIParserFunc *parserFunc);
+                                                                            QtTIAbstractParserArgs *parserArgs,
+                                                                            QtTIAbstractParserFunc *parserFunc);
 
     static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseParamValue(const QString &str,
-                                                                                   QtTIParserArgs *parserArgs,
-                                                                                   QtTIParserFunc *parserFunc);
+                                                                                   QtTIAbstractParserArgs *parserArgs,
+                                                                                   QtTIAbstractParserFunc *parserFunc);
 };
 
 #endif // QTTIPARSERTERNARYOPERATOR_H

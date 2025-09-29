@@ -4,12 +4,15 @@
 #include <QMap>
 #include <QHash>
 
-QtTIControlBlockFor::QtTIControlBlockFor(QtTIParser *parser)
-    : QtTIAbstractControlBlock(parser, -1)
+QtTIControlBlockFor::QtTIControlBlockFor(QtTIAbstractParser *parser)
+    : QtTIAbstractControlBlock(parser, -1, -1)
 {}
 
-QtTIControlBlockFor::QtTIControlBlockFor(QtTIParser *parser, const QString &blockCond, const int lineNum)
-    : QtTIAbstractControlBlock(parser, lineNum)
+QtTIControlBlockFor::QtTIControlBlockFor(QtTIAbstractParser *parser,
+                                         const QString &blockCond,
+                                         const int lineNum,
+                                         const int linePos)
+    : QtTIAbstractControlBlock(parser, lineNum, linePos)
     , _blockCond(blockCond)
 {}
 
@@ -22,9 +25,11 @@ QtTIControlBlockFor::~QtTIControlBlockFor()
 //! \param lineNum Line number
 //! \return
 //!
-QtTIAbstractControlBlock *QtTIControlBlockFor::makeBlock(const QString &blockCond, const int lineNum)
+QtTIAbstractControlBlock *QtTIControlBlockFor::makeBlock(const QString &blockCond,
+                                                         const int lineNum,
+                                                         const int linePos)
 {
-    return new QtTIControlBlockFor(parser(), blockCond, lineNum);
+    return new QtTIControlBlockFor(parser(), blockCond, lineNum, linePos);
 }
 
 //!
@@ -43,7 +48,7 @@ QString QtTIControlBlockFor::blockCondition() const
 //!
 bool QtTIControlBlockFor::isBlockCondStart(const QString &blockCond)
 {
-    QRegExp rx("^(for\\s+([A-Za-z0-9_\\ \\,]+)\\s+in\\s+([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\(\\)]+))");
+    QRegExp rx(RX_CONTROL_BLOCK_FOR_START);
     return (rx.indexIn(blockCond) != -1);
 }
 
@@ -54,7 +59,8 @@ bool QtTIControlBlockFor::isBlockCondStart(const QString &blockCond)
 //!
 bool QtTIControlBlockFor::isBlockCondEnd(const QString &blockCond)
 {
-    QRegExp rx("^(endfor)$");
+//    QRegExp rx("^(endfor)$");
+    QRegExp rx(RX_CONTROL_BLOCK_FOR_END);
     return (rx.indexIn(blockCond) != -1);
 }
 
@@ -62,9 +68,29 @@ bool QtTIControlBlockFor::isBlockCondEnd(const QString &blockCond)
 //! \brief Append control block body
 //! \param blockBody Control block body
 //!
-void QtTIControlBlockFor::appendBlockBody(const QString &blockBody)
+void QtTIControlBlockFor::appendBlockBody(const QString &blockBody, const int lineNum)
 {
-    _blockBody += blockBody;
+    _blockBody[lineNum].append(blockBody);
+}
+
+//!
+//! \brief Set control block body
+//! \param blockBody Control block body
+//! \param lineNum Control block body line number
+//!
+void QtTIControlBlockFor::setBlockBody(const QString &blockBody, const int lineNum)
+{
+    _blockBody[lineNum] = blockBody;
+}
+
+//!
+//! \brief Get control block body
+//! \param lineNum Control block body line number
+//! \return
+//!
+QString QtTIControlBlockFor::blockBody(const int lineNum) const
+{
+    return _blockBody[lineNum];
 }
 
 //!
@@ -73,14 +99,14 @@ void QtTIControlBlockFor::appendBlockBody(const QString &blockBody)
 //!
 std::tuple<bool, QString, QString> QtTIControlBlockFor::evalBlock()
 {
-    QRegExp rx("^(for\\s+([A-Za-z0-9_\\ \\,]+)\\s+in\\s+([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\(\\)]+))");
+    QRegExp rx(RX_CONTROL_BLOCK_FOR_START);
     if (rx.indexIn(_blockCond) != -1) {
         const QStringList paramNames = rx.cap(2).trimmed().split(",");
 
         bool isOk = false;
         QVariant paramValue;
         QString error;
-        std::tie(isOk, paramValue, error) = parseParamValue(rx.cap(3).trimmed());
+        std::tie(isOk, paramValue, error) = parseParamValue(rx.cap(3).trimmed(), lineNum(), linePos());
         if (!isOk)
             return std::make_tuple(false, "", error);
         if (paramNames.isEmpty())

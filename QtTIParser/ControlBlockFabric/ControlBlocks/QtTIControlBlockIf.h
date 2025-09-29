@@ -81,11 +81,16 @@ public:
         Else
     };
 
-    QtTIControlBlockIf(QtTIParser *parser);
-    QtTIControlBlockIf(QtTIParser *parser, const QString &blockCond, const int lineNum);
+    QtTIControlBlockIf(QtTIAbstractParser *parser);
+    QtTIControlBlockIf(QtTIAbstractParser *parser,
+                       const QString &blockCond,
+                       const int lineNum,
+                       const int linePos);
     virtual ~QtTIControlBlockIf();
 
-    QtTIAbstractControlBlock *makeBlock(const QString &blockCond, const int lineNum) final;
+    QtTIAbstractControlBlock *makeBlock(const QString &blockCond,
+                                        const int lineNum,
+                                        const int linePos) final;
     QString blockCondition() const final;
     bool isBlockCondStart(const QString &blockCond) final;
     bool isBlockCondIntermediate(const QString &blockCond) final;
@@ -93,7 +98,9 @@ public:
     bool isBlockCondEnd(const QString &blockCond) final;
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> evalBlock() final;
 
-    void appendBlockBody(const QString &blockBody) final;
+    void appendBlockBody(const QString &blockBody, const int lineNum) final;
+    void setBlockBody(const QString &blockBody, const int lineNum) final;
+    QString blockBody(const int lineNum) const final;
 
 private:
     QString _ifCond;
@@ -102,9 +109,17 @@ private:
 
     BodyPosition _bodyPos {BodyPosition::If};
 
-    QString _ifBody;
-    QString _elseBody;
-    QStringList _elseIfBodys;
+    QMap<int,QString> _ifBody;
+    QMap<int,QString> _elseBody;
+    QList<QMap<int,QString>> _elseIfBodys;
+
+    static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> evalCond(const QString &str,
+                                                                            QtTIAbstractParserArgs *parserArgs,
+                                                                            QtTIAbstractParserFunc *parserFunc);
+
+    static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseParamValue(const QString &str,
+                                                                                   QtTIAbstractParserArgs *parserArgs,
+                                                                                   QtTIAbstractParserFunc *parserFunc);
 };
 
 #endif // QTTICONTROLBLOCKIF_H

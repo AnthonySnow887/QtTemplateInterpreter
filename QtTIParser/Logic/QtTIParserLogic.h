@@ -4,8 +4,8 @@
 #include <QString>
 #include <QVariant>
 
-#include "../QtTIParserArgs.h"
-#include "../QtTIParserFunc.h"
+#include "../Abstract/QtTIAbstractParserArgs.h"
+#include "../Abstract/QtTIAbstractParserFunc.h"
 
 class QtTIParserLogic
 {
@@ -25,37 +25,37 @@ public:
 
     static bool isLogicExpr(const QString &expr);
     static QVariant parseLogic(const QString &expr,
-                               QtTIParserArgs *parserArgs,
-                               QtTIParserFunc *parserFunc,
+                               QtTIAbstractParserArgs *parserArgs,
+                               QtTIAbstractParserFunc *parserFunc,
                                bool *isOk,
                                QString &error);
 
 private:
     static QVariant parseLogicWithoutBrackets(const QString &expr,
-                                              QtTIParserArgs *parserArgs,
-                                              QtTIParserFunc *parserFunc,
+                                              QtTIAbstractParserArgs *parserArgs,
+                                              QtTIAbstractParserFunc *parserFunc,
                                               bool *isOk,
                                               QString &error);
 
     static std::tuple<bool/*isOk*/,bool/*res*/,QString/*err*/> compareBlockCondition(const QString &str,
-                                                                                     QtTIParserArgs *parserArgs,
-                                                                                     QtTIParserFunc *parserFunc);
+                                                                                     QtTIAbstractParserArgs *parserArgs,
+                                                                                     QtTIAbstractParserFunc *parserFunc);
 
     static std::tuple<bool/*isOk*/,bool/*res*/,QString/*err*/> compareExpression(const QString &str,
-                                                                                 QtTIParserArgs *parserArgs,
-                                                                                 QtTIParserFunc *parserFunc);
+                                                                                 QtTIAbstractParserArgs *parserArgs,
+                                                                                 QtTIAbstractParserFunc *parserFunc);
 
     static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseParamValue(const QString &str,
-                                                                                   QtTIParserArgs *parserArgs,
-                                                                                   QtTIParserFunc *parserFunc);
+                                                                                   QtTIAbstractParserArgs *parserArgs,
+                                                                                   QtTIAbstractParserFunc *parserFunc);
 
     static bool compare(const QVariant &left);
     static bool compare(const QVariant &left, const QVariant &right, const QString &cond);
 
     template<typename T>
     static bool compare(const T &left,
-                 const T &right,
-                 const LogicalOperation &operation);
+                        const T &right,
+                        const LogicalOperation &operation);
 
     static LogicalOperation strToOperation(const QString &cond);
 };

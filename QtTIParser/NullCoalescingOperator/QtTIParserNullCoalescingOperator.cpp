@@ -2,6 +2,7 @@
 #include "../BracketsExpr/QtTIParserBracketsExpr.h"
 #include "../Logic/QtTIParserLogic.h"
 #include "../Math/QtTIParserMath.h"
+#include "../../QtTIDefines/QtTIRegExpDefines.h"
 #include <QRegExp>
 
 //!
@@ -11,7 +12,7 @@
 //!
 bool QtTIParserNullCoalescingOperator::isNullCoalescingOperatorExpr(const QString &expr)
 {
-    QRegExp rx("^\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{1,}\\?\\?\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{0,}$");
+    QRegExp rx(RX_NULL_COALESCING);
     return (rx.indexIn(expr) != -1);
 }
 
@@ -38,8 +39,8 @@ bool QtTIParserNullCoalescingOperator::isNullCoalescingOperatorExpr(const QStrin
 //!         {{ ((a + aa.b) > 5 && (aa.b < 2 || aa.c >= 3)) ?? (a - aa.b) }} is 'true'
 //!
 QVariant QtTIParserNullCoalescingOperator::parseNullCoalescingOperator(const QString &expr,
-                                                                       QtTIParserArgs *parserArgs,
-                                                                       QtTIParserFunc *parserFunc,
+                                                                       QtTIAbstractParserArgs *parserArgs,
+                                                                       QtTIAbstractParserFunc *parserFunc,
                                                                        bool *isOk,
                                                                        QString &error)
 {
@@ -59,7 +60,7 @@ QVariant QtTIParserNullCoalescingOperator::parseNullCoalescingOperator(const QSt
         return QVariant();
     }
 
-    QRegExp rx("^\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{1,}\\?\\?\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!\\&\\|]+)\\s{0,}$");
+    QRegExp rx(RX_NULL_COALESCING);
     if (rx.indexIn(expr) != -1) {
         QString ternCond = rx.cap(1).trimmed();
         QString ternCondFalse = rx.cap(2).trimmed();
@@ -100,8 +101,8 @@ QVariant QtTIParserNullCoalescingOperator::parseNullCoalescingOperator(const QSt
 //! \return
 //!
 std::tuple<bool, QVariant, QString> QtTIParserNullCoalescingOperator::evalCond(const QString &str,
-                                                                               QtTIParserArgs *parserArgs,
-                                                                               QtTIParserFunc *parserFunc)
+                                                                               QtTIAbstractParserArgs *parserArgs,
+                                                                               QtTIAbstractParserFunc *parserFunc)
 {
     if (str.isEmpty())
         return std::make_tuple(false, QVariant(), "Eval condition failed (empty string passed)");
@@ -124,8 +125,8 @@ std::tuple<bool, QVariant, QString> QtTIParserNullCoalescingOperator::evalCond(c
 //! \return
 //!
 std::tuple<bool, QVariant, QString> QtTIParserNullCoalescingOperator::parseParamValue(const QString &str,
-                                                                                      QtTIParserArgs *parserArgs,
-                                                                                      QtTIParserFunc *parserFunc)
+                                                                                      QtTIAbstractParserArgs *parserArgs,
+                                                                                      QtTIAbstractParserFunc *parserFunc)
 {
     if (str.isEmpty())
         return std::make_tuple(false, QVariant(), "Parse value failed (empty string passed)");
@@ -145,7 +146,7 @@ std::tuple<bool, QVariant, QString> QtTIParserNullCoalescingOperator::parseParam
     if (QtTIParserMath::isMathExpr(str)) {
         bool isOk = false;
         QString error;
-        QVariant result = QtTIParserMath::parseMath(str, parserArgs, &isOk, error);
+        QVariant result = QtTIParserMath::parseMath(str, parserArgs, parserFunc, &isOk, error);
         if (!isOk)
             return std::make_tuple(false, QVariant(), error);
 
@@ -153,7 +154,7 @@ std::tuple<bool, QVariant, QString> QtTIParserNullCoalescingOperator::parseParam
     }
 
     // function
-    QRegExp rxFunc("(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/]*)\\s*\\)\\s*)");
+    QRegExp rxFunc(RX_FUNC);
     if (rxFunc.indexIn(str) != -1) {
         QString funcName = rxFunc.cap(2).trimmed();
         QVariantList funcArgs = parserArgs->parseHelpFunctionArgs(rxFunc.cap(3).trimmed());

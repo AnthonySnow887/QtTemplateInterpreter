@@ -1,11 +1,14 @@
 #include "QtTIControlBlockSet.h"
 
-QtTIControlBlockSet::QtTIControlBlockSet(QtTIParser *parser)
-    : QtTIAbstractControlBlock(parser, -1)
+QtTIControlBlockSet::QtTIControlBlockSet(QtTIAbstractParser *parser)
+    : QtTIAbstractControlBlock(parser, -1, -1)
 {}
 
-QtTIControlBlockSet::QtTIControlBlockSet(QtTIParser *parser, const QString &blockCond, const int lineNum)
-    : QtTIAbstractControlBlock(parser, lineNum)
+QtTIControlBlockSet::QtTIControlBlockSet(QtTIAbstractParser *parser,
+                                         const QString &blockCond,
+                                         const int lineNum,
+                                         const int linePos)
+    : QtTIAbstractControlBlock(parser, lineNum, linePos)
     , _blockCond(blockCond)
 {}
 
@@ -18,9 +21,11 @@ QtTIControlBlockSet::~QtTIControlBlockSet()
 //! \param lineNum Line number
 //! \return
 //!
-QtTIAbstractControlBlock *QtTIControlBlockSet::makeBlock(const QString &blockCond, const int lineNum)
+QtTIAbstractControlBlock *QtTIControlBlockSet::makeBlock(const QString &blockCond,
+                                                         const int lineNum,
+                                                         const int linePos)
 {
-    return new QtTIControlBlockSet(parser(), blockCond, lineNum);
+    return new QtTIControlBlockSet(parser(), blockCond, lineNum, linePos);
 }
 
 //!
@@ -39,7 +44,7 @@ QString QtTIControlBlockSet::blockCondition() const
 //!
 bool QtTIControlBlockSet::isBlockCondStart(const QString &blockCond)
 {
-    QRegExp rx("(set\\s+([\\w]+)\\s{0,}\\=\\s{0,}([A-Za-z0-9_\\ \\+\\-\\%\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\!\\=\\<\\>\\(\\)\\&\\|]+))");
+    QRegExp rx(RX_CONTROL_BLOCK_SET);
     return (rx.indexIn(blockCond) != -1);
 }
 
@@ -59,19 +64,19 @@ bool QtTIControlBlockSet::isBlockCondEnd(const QString &blockCond)
 //!
 std::tuple<bool, QString, QString> QtTIControlBlockSet::evalBlock()
 {
-    QRegExp rx("(set\\s+([\\w]+)\\s{0,}\\=\\s{0,}([A-Za-z0-9_\\ \\+\\-\\%\\*\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\!\\=\\<\\>\\(\\)\\&\\|]+))");
+    QRegExp rx(RX_CONTROL_BLOCK_SET);
     if (rx.indexIn(_blockCond) != -1) {
         QString paramName = rx.cap(2).trimmed();
         QString paramExpr = rx.cap(3).trimmed();
         bool isOk = false;
         QVariant paramValue;
         QString error;
-        std::tie(isOk, paramValue, error) = parseParamValue(paramExpr);
+        std::tie(isOk, paramValue, error) = parseParamValue(paramExpr, lineNum(), linePos());
         if (!isOk)
             return std::make_tuple(false, "", QString("Parse parameter value in block 'set ...' in line %1 failed! Error: %2").arg(lineNum()).arg(error));
         if (paramName.isEmpty())
             return std::make_tuple(false, "", QString("Invalid parameter name (empty) in line %1").arg(lineNum()));
-        if (paramValue.isNull())
+        if (paramValue.isNull() && paramValue.type() != QVariant::Type::String)
             return std::make_tuple(false, "", QString("Invalid parameter value (Null) in line %1").arg(lineNum()));
         if (parser()->parserArgs()->hasParam(paramName))
             return std::make_tuple(false, "", QString("Parameter with name '%1' in line %2 already declared in the global parameter list").arg(paramName).arg(lineNum()));

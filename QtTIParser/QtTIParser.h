@@ -4,28 +4,26 @@
 #include <QString>
 #include <tuple>
 
+#include "ControlBlockFabric/QtTIControlBlockFabric.h"
+#include "Abstract/QtTIAbstractParser.h"
 #include "QtTIParserArgs.h"
 #include "QtTIParserFunc.h"
-#include "../QtTIHelperFunction/QtTIHelperFunction.h"
 
-class QtTIParser
+class QtTIParser : public QtTIAbstractParser
 {
 public:
     QtTIParser();
-    ~QtTIParser();
+    virtual ~QtTIParser();
 
-    QtTIParserArgs *parserArgs();
-    QtTIParserFunc *parserFunc();
+    QtTIAbstractParserArgs *parserArgs() final;
+    QtTIAbstractParserFunc *parserFunc() final;
 
-    QString removeComments(const QString &line, bool *isMultiline);
+    std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseLine(const QString &line,
+                                                                     const int lineNum,
+                                                                     QtTIAbstractParserBlock *&block) final;
 
-    std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseLine(const QString &line, const int lineNum);
-
-    std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseHelpFunctions(const QString &line, const int lineNum);
-    QMap<QString, QVariant> parseAndExecHelpFunctions(const QString &line, const int lineNum, bool *isOk, QString &error);
-
-    std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> parseHelpParams(const QString &line, const int lineNum);
-    QMap<QString, QVariant> parseAndExecHelpParams(const QString &line, const int lineNum, bool *isOk, QString &error);
+    std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseAndExecBlockData(QtTIAbstractParserBlock *block) final;
+    std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseAndExecBlockData(const QString &data, const QPair<int, int> &startPos) final;
 
 private:
     QString evalHelpParam(const QString& paramName);
@@ -33,11 +31,10 @@ private:
 
     std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> evalHelpFunction(const QString& funcName, const QVariantList &args) const;
 
-    QString validParamExpr(const QString &str, const QString &ending) const;
-
 private:
-    QtTIParserArgs _parserArgs;
-    QtTIParserFunc _parserFunc;
+    QtTIParserArgs _parserArgs; //!< parser args object
+    QtTIParserFunc _parserFunc; //!< parser func object
+    QtTIControlBlockFabric _blockFabric {this}; //!< control blocks fabric
 };
 
 #endif // QTTIPARSER_H

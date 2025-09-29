@@ -10,7 +10,7 @@
 //!
 QtTIBracketsNode QtTIParserBracketsExpr::parseBracketsExpression(const QString &string,
                                                                  const QStringList &validStringsBeforeBracket,
-                                                                 QtTIParserArgs *parserArgs,
+                                                                 QtTIAbstractParserArgs *parserArgs,
                                                                  std::function<std::tuple<bool, QVariant, QString> (const QString &)> callback)
 {
     if (string.isEmpty())
@@ -19,8 +19,9 @@ QtTIBracketsNode QtTIParserBracketsExpr::parseBracketsExpression(const QString &
     QList<QtTIBracketsNode> nodes({ QtTIBracketsNode(parserArgs, callback) });
     QString tmpValue;
     bool isEescaping = false;
-    bool isSkipped = false;
+    QList<bool> isSkipped({ false });
     int openBrackets = 0;
+    int realOpenBrackets = 0;
     for (int i = 0; i < string.size(); i++) {
         const QChar ch = string[i];
         QChar chPrev;
@@ -42,17 +43,27 @@ QtTIBracketsNode QtTIParserBracketsExpr::parseBracketsExpression(const QString &
             const QString lastString = lastStrings.last();
             if (!tmpValue.trimmed().isEmpty() && !validStringsBeforeBracket.contains(lastString)) {
                 tmpValue += ch;
-                isSkipped = true;
+                isSkipped << true;
+                realOpenBrackets++;
                 continue;
             }
-            isSkipped = false;
+            isSkipped << false;
+            realOpenBrackets++;
             nodes[openBrackets].appendBodyData(tmpValue);
             nodes.append(QtTIBracketsNode(parserArgs, callback));
             openBrackets++;
             tmpValue.clear();
             continue;
         }
-        if (ch == ")" && !isEescaping && !isSkipped) {
+        if (ch == ")" && !isEescaping) {
+            if (isSkipped[realOpenBrackets]) {
+                tmpValue += ch;
+                isSkipped.removeAt(realOpenBrackets);
+                realOpenBrackets--;
+                continue;
+            }
+            isSkipped.removeAt(realOpenBrackets);
+            realOpenBrackets--;
             QtTIBracketsNode closedNode = nodes[openBrackets];
             closedNode.appendBodyData(tmpValue);
             nodes.removeAt(openBrackets);

@@ -6,12 +6,10 @@
 QtTemplateInterpreter::QtTemplateInterpreter()
 {
     _parser = new QtTIParser();
-    _blockFabric = new QtTIControlBlockFabric(_parser);
 }
 
 QtTemplateInterpreter::~QtTemplateInterpreter()
 {
-    delete _blockFabric;
     delete _parser;
 }
 
@@ -123,9 +121,7 @@ std::tuple<bool, QString, QString> QtTemplateInterpreter::interpret(QString data
 
     QTextStream in(&data);
     int lineNum = 0;
-    bool isMultiline = false;
-    QtTIAbstractControlBlock *block = nullptr;
-    QString unfinishedBlockCond;
+    QtTIAbstractParserBlock *block = nullptr;
     QString tmpData;
     while (!in.atEnd()) {
         if (!tmpData.isEmpty()
@@ -134,26 +130,9 @@ std::tuple<bool, QString, QString> QtTemplateInterpreter::interpret(QString data
 
         lineNum++;
         QString line = in.readLine() + lineEndAppender;
-
-        // remove comments
-        line = _parser->removeComments(line, &isMultiline);
-        if (isMultiline)
-            continue;
-
         bool isOk = false;
         QString error;
-
-        // search block
-        std::tie(isOk, line, block, unfinishedBlockCond, error) = _blockFabric->parseBlock(line, block, unfinishedBlockCond, lineNum);
-        if (!isOk) {
-            clear(block);
-            return std::make_tuple(false, "", error);
-        }
-        if (!unfinishedBlockCond.isEmpty())
-            continue;
-
-        // search params & functions
-        std::tie(isOk, line, error) = _parser->parseLine(line, lineNum);
+        std::tie(isOk, line, error) = _parser->parseLine(line, lineNum, block);
         if (!isOk) {
             clear(block);
             return std::make_tuple(false, "", error);
@@ -162,8 +141,10 @@ std::tuple<bool, QString, QString> QtTemplateInterpreter::interpret(QString data
     }
 
     // check block
-    if (block) {
-        QString error = QString("Unfinished block in line %1!").arg(block->lineNum());
+    if (block && block->isUnfinished()) {
+        QString error = QString("Unfinished block in line %1 (position %2)!")
+                        .arg(block->startPos().first)
+                        .arg(block->startPos().second);
         clear(block);
         return std::make_tuple(false, "", error);
     }
@@ -228,10 +209,10 @@ QString QtTemplateInterpreter::interpretResFromFile(const QString &path)
 
 //!
 //! \brief Clear all tmp data
-//! \param block Control block pointer
+//! \param block Abstract parser block pointer
 //! \private
 //!
-void QtTemplateInterpreter::clear(QtTIAbstractControlBlock *block)
+void QtTemplateInterpreter::clear(QtTIAbstractParserBlock *block)
 {
     _parser->parserArgs()->clearTmpParams();
     if (block)

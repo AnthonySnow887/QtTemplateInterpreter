@@ -1,11 +1,14 @@
 #include "QtTIControlBlockUnset.h"
 
-QtTIControlBlockUnset::QtTIControlBlockUnset(QtTIParser *parser)
-    : QtTIAbstractControlBlock(parser, -1)
+QtTIControlBlockUnset::QtTIControlBlockUnset(QtTIAbstractParser *parser)
+    : QtTIAbstractControlBlock(parser, -1, -1)
 {}
 
-QtTIControlBlockUnset::QtTIControlBlockUnset(QtTIParser *parser, const QString &blockCond, const int lineNum)
-    : QtTIAbstractControlBlock(parser, lineNum)
+QtTIControlBlockUnset::QtTIControlBlockUnset(QtTIAbstractParser *parser,
+                                             const QString &blockCond,
+                                             const int lineNum,
+                                             const int linePos)
+    : QtTIAbstractControlBlock(parser, lineNum, linePos)
     , _blockCond(blockCond)
 {}
 
@@ -18,9 +21,11 @@ QtTIControlBlockUnset::~QtTIControlBlockUnset()
 //! \param lineNum Line number
 //! \return
 //!
-QtTIAbstractControlBlock *QtTIControlBlockUnset::makeBlock(const QString &blockCond, const int lineNum)
+QtTIAbstractControlBlock *QtTIControlBlockUnset::makeBlock(const QString &blockCond,
+                                                           const int lineNum,
+                                                           const int linePos)
 {
-    return new QtTIControlBlockUnset(parser(), blockCond, lineNum);
+    return new QtTIControlBlockUnset(parser(), blockCond, lineNum, linePos);
 }
 
 //!
@@ -39,7 +44,7 @@ QString QtTIControlBlockUnset::blockCondition() const
 //!
 bool QtTIControlBlockUnset::isBlockCondStart(const QString &blockCond)
 {
-    QRegExp rx("(unset\\s+([\\w]+))");
+    QRegExp rx(RX_CONTROL_BLOCK_UNSET);
     return (rx.indexIn(blockCond) != -1);
 }
 
@@ -59,7 +64,7 @@ bool QtTIControlBlockUnset::isBlockCondEnd(const QString &blockCond)
 //!
 std::tuple<bool, QString, QString> QtTIControlBlockUnset::evalBlock()
 {
-    QRegExp rx("(unset\\s+([\\w]+))");
+    QRegExp rx(RX_CONTROL_BLOCK_UNSET);
     if (rx.indexIn(_blockCond) != -1) {
         QString paramName = rx.cap(2).trimmed();
         // check

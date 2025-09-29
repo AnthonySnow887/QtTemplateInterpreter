@@ -1,6 +1,7 @@
 #include "QtTIParserMath.h"
-#include "QtTIMathAction.h"
+
 #include "../BracketsExpr/QtTIParserBracketsExpr.h"
+#include "../../QtTIDefines/QtTIRegExpDefines.h"
 
 #include <QRegExp>
 #include <qmath.h>
@@ -12,7 +13,7 @@
 //!
 bool QtTIParserMath::isMathExpr(const QString &expr)
 {
-    QRegExp rx("^\\s{0,}([\\w\\.\\+\\-\\(\\) ]+)(\\s{0,}(\\+|-|/|//|%|\\*|\\*\\*)\\s{0,}([\\w\\.\\+\\-\\(\\) ]+)\\s{0,})+$");
+    QRegExp rx(RX_MATH_OP);
     return (rx.indexIn(expr) != -1);
 }
 
@@ -20,6 +21,7 @@ bool QtTIParserMath::isMathExpr(const QString &expr)
 //! \brief Parse math expression and calculate (with brackets)
 //! \param expr
 //! \param parserArgs
+//! \param parserFunc
 //! \param[in,out] isOk
 //! \param[in,out] error
 //! \return
@@ -52,7 +54,7 @@ bool QtTIParserMath::isMathExpr(const QString &expr)
 //!         {{ ( 10.5 + 2 * 2 ) / 3 + 10 - 1 + 2 ** 2 }} is 17.833333333333332
 //!         {{ ( 10.5 + 2 * (2 + 5)) / (3 + 10 * 2) - (1 + 2) ** 2 }} is -7.934782608695652
 //!
-QVariant QtTIParserMath::parseMath(const QString &expr, QtTIParserArgs *parserArgs, bool *isOk, QString &error)
+QVariant QtTIParserMath::parseMath(const QString &expr, QtTIAbstractParserArgs *parserArgs, QtTIAbstractParserFunc *parserFunc, bool *isOk, QString &error)
 {
     if (isOk)
         *isOk = false;
@@ -67,10 +69,10 @@ QVariant QtTIParserMath::parseMath(const QString &expr, QtTIParserArgs *parserAr
     }
 
     QStringList validStringsBeforeBracket({ "+", "-", "/", "%", "//", "*", "**" });
-    QtTIBracketsNode brNode = QtTIParserBracketsExpr::parseBracketsExpression(expr, validStringsBeforeBracket, parserArgs, [parserArgs](const QString &nodeBody) {
+    QtTIBracketsNode brNode = QtTIParserBracketsExpr::parseBracketsExpression(expr, validStringsBeforeBracket, parserArgs, [parserArgs, parserFunc](const QString &nodeBody) {
         bool isOk = false;
         QString error;
-        QVariant result = QtTIParserMath::parseMathWithoutBrackets(nodeBody, parserArgs, &isOk, error);
+        QVariant result = QtTIParserMath::parseMathWithoutBrackets(nodeBody, parserArgs, parserFunc, &isOk, error);
         return std::make_tuple(isOk, result, error);
     });
     if (!brNode.isValid()) {
@@ -89,11 +91,12 @@ QVariant QtTIParserMath::parseMath(const QString &expr, QtTIParserArgs *parserAr
 //! \brief Parse math expression without brackets and calculate
 //! \param expr
 //! \param parserArgs
+//! \param parserFunc
 //! \param[in,out] isOk
 //! \param[in,out] error
 //! \return
 //!
-QVariant QtTIParserMath::parseMathWithoutBrackets(const QString &expr, QtTIParserArgs *parserArgs, bool *isOk, QString &error)
+QVariant QtTIParserMath::parseMathWithoutBrackets(const QString &expr, QtTIAbstractParserArgs *parserArgs, QtTIAbstractParserFunc *parserFunc, bool *isOk, QString &error)
 {
     if (isOk)
         *isOk = false;
@@ -108,25 +111,13 @@ QVariant QtTIParserMath::parseMathWithoutBrackets(const QString &expr, QtTIParse
     }
 
     QList<QtTIMathAction> actions;
-    QRegExp rxMath("\\s{0,}([\\w\\.\\+\\-]+)\\s{0,}(\\+|-|/|//|%|\\*|\\*\\*)\\s{0,}([\\w\\.\\+\\-]+)\\s{0,}");
-    int pos = 0;
-    while ((pos = rxMath.indexIn(expr, pos)) != -1) {
-        pos += rxMath.matchedLength();
-        if (rxMath.captureCount() < 3)
-            continue;
-
-        QString condLeft = rxMath.cap(1);
-        QString condOp = rxMath.cap(2);
-        QString condRight = rxMath.cap(3);
-        QVariant condLeftVal = parserArgs->prepareHelpFunctionArg(condLeft.trimmed());
-        QVariant condRightVal = parserArgs->prepareHelpFunctionArg(condRight.trimmed());
-        actions.append(QtTIMathAction(condLeftVal, condRightVal, condOp));
-        // re-calculate pos
-        pos -= (condOp.size() + condRight.size());
-    }
+    bool parseIsOk = false;
+    parseLR(expr, &actions, parserArgs, parserFunc, &parseIsOk, error);
+    if (!parseIsOk)
+        return QVariant();
 
     // calc math operations
-    pos = 0;
+    int pos = 0;
     int opPriority = 0;
     while (true) {
         if (pos == actions.size()) {
@@ -176,6 +167,161 @@ QVariant QtTIParserMath::parseMathWithoutBrackets(const QString &expr, QtTIParse
 }
 
 //!
+//! \brief Parse left and right values
+//! \param expr
+//! \param actions
+//! \param parserArgs
+//! \param parserFunc
+//! \param[in,out] isOk
+//! \param[in,out] error
+//!
+void QtTIParserMath::parseLR(const QString &expr, QList<QtTIMathAction> *actions, QtTIAbstractParserArgs *parserArgs, QtTIAbstractParserFunc *parserFunc, bool *isOk, QString &error)
+{
+    if (isOk)
+        *isOk = false;
+    error.clear();
+    QRegExp rxMath(RX_MATH_OP_SEARCH);
+    if (rxMath.indexIn(expr, 0) != -1) {
+        if (rxMath.captureCount() < 3)
+            return;
+
+        QString condLeft = rxMath.cap(1).trimmed();
+        QString condOp = rxMath.cap(2).trimmed();
+        QString condRight = rxMath.cap(3).trimmed();
+        QVariant condLeftVal;
+        QVariant condRightVal;
+        bool parseIsOk = false;
+        if (rxMath.indexIn(condLeft) != -1) {
+            parseLR(condLeft.trimmed(), actions, parserArgs, parserFunc, &parseIsOk, error);
+            if (!parseIsOk) {
+                error = QString("Parse condition left value failed (condition: '%1')!").arg(condLeft.trimmed());
+                return;
+            }
+            const int pos = actions->size() - 1;
+            if (pos < 0)
+                return;
+            condLeftVal = actions->at(pos).right();
+        } else {
+            std::tie(parseIsOk, condLeftVal, error) = QtTIParserMath::parseParamValue(condLeft.trimmed(), parserArgs, parserFunc);
+            if (!parseIsOk) {
+                error = QString("Parse condition left value failed (condition: '%1')!").arg(condLeft.trimmed());
+                return;
+            }
+        }
+
+        const int rPos = actions->size();
+        if (rxMath.indexIn(condRight) != -1) {
+            parseLR(condRight.trimmed(), actions, parserArgs, parserFunc, &parseIsOk, error);
+            if (!parseIsOk) {
+                error = QString("Parse condition right value failed (condition: '%1')!").arg(condRight.trimmed());
+                return;
+            }
+            if (rPos >= actions->size())
+                return;
+            condRightVal = actions->at(rPos).left();
+        } else {
+            std::tie(parseIsOk, condRightVal, error) = QtTIParserMath::parseParamValue(condRight.trimmed(), parserArgs, parserFunc);
+            if (!parseIsOk) {
+                error = QString("Parse condition right value failed (condition: '%1')!").arg(condRight.trimmed());
+                return;
+            }
+        }
+        actions->insert(rPos, QtTIMathAction(condLeftVal, condRightVal, condOp));
+        if (isOk)
+            *isOk = true;
+    }
+}
+
+//!
+//! \brief Parse parameter value from string
+//! \param str Parameter value string view
+//! \return
+//!
+std::tuple<bool, QVariant, QString> QtTIParserMath::parseParamValue(const QString &str, QtTIAbstractParserArgs *parserArgs, QtTIAbstractParserFunc *parserFunc)
+{
+    if (str.isEmpty())
+        return std::make_tuple(false, QVariant(), "Parse value failed (empty string passed)");
+
+    // math
+    if (QtTIParserMath::isMathExpr(str)) {
+        bool isOk = false;
+        QString error;
+        QVariant result = QtTIParserMath::parseMath(str, parserArgs, parserFunc, &isOk, error);
+        if (!isOk)
+            return std::make_tuple(false, QVariant(), error);
+
+        return std::make_tuple(true, result, "");
+    }
+
+    // function
+    QRegExp rxFunc(RX_FUNC);
+    if (rxFunc.indexIn(str) != -1) {
+        QString funcName = rxFunc.cap(2).trimmed();
+        QVariantList funcArgs = parserArgs->parseHelpFunctionArgs(rxFunc.cap(3).trimmed());
+        return parserFunc->evalHelpFunction(funcName, funcArgs);
+    }
+
+    // arg
+    QVariantList tmp = parserArgs->parseHelpFunctionArgs(str);
+    if (tmp.isEmpty())
+        return std::make_tuple(false, QVariant(), "Parse value failed");
+    if (tmp.size() > 1)
+        return std::make_tuple(false, QVariant(), "Parse value failed (more than one argument is given)");
+
+    return std::make_tuple(true, tmp[0], "");
+}
+
+//!
+//! \brief Select type for calc operation
+//! \param left
+//! \param right
+//! \return
+//!
+int QtTIParserMath::selectCalcType(const QVariant &left, const QVariant &right)
+{
+    const int lType = static_cast<int>(left.type());
+    const int rType = static_cast<int>(right.type());
+    const ulong lTypeSize = QtTIParserMath::typeSize(left);
+    const ulong rTypeSize = QtTIParserMath::typeSize(right);
+    int calcType = lType;
+    if (rTypeSize > lTypeSize) {
+        calcType = rType;
+    } else if (rTypeSize == lTypeSize
+               && rType != lType) {
+        if (rType == QVariant::Double
+            || rType == QMetaType::Float)
+            calcType = rType;
+    }
+    return calcType;
+}
+
+//!
+//! \brief Select value type size
+//! \param value
+//! \return
+//!
+ulong QtTIParserMath::typeSize(const QVariant &value)
+{
+    switch (static_cast<int>(value.type())) {
+        case QVariant::Int:
+            return sizeof (value.toInt());      // 4
+        case QVariant::UInt:
+            return sizeof (value.toUInt());     // 4
+        case QMetaType::Float:
+            return sizeof (value.toFloat());    // 4
+        case QVariant::Double:
+            return sizeof (value.toDouble());   // 8
+        case QVariant::LongLong:
+            return sizeof (value.toLongLong()); // 8
+        case QVariant::ULongLong:
+            return sizeof (value.toULongLong());// 8
+        default:
+            break;
+    }
+    return 0;
+}
+
+//!
 //! \brief Calculate math operation
 //! \param left
 //! \param right
@@ -192,11 +338,12 @@ std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation(const QVar
                          QVariant::ULongLong});
 
     if (!supTypes.contains(static_cast<int>(left.type())))
-        return std::make_tuple(false, QVariant(), QString("Unsupported left value type '%1' for operator '%2'").arg(left.typeName()).arg(op));
+        return std::make_tuple(false, QVariant(), QString("Unsupported left value type '%1' for operator '%2'").arg(left.typeName(), op));
     if (!supTypes.contains(static_cast<int>(right.type())))
-        return std::make_tuple(false, QVariant(), QString("Unsupported right value type '%1' for operator '%2'").arg(right.typeName()).arg(op));
+        return std::make_tuple(false, QVariant(), QString("Unsupported right value type '%1' for operator '%2'").arg(right.typeName(), op));
 
-    switch (static_cast<int>(left.type())) {
+    const int cType = QtTIParserMath::selectCalcType(left, right);
+    switch (cType) {
         case QVariant::Int:
             return calcMathOperation_t_int<int>(left.toInt(), right.toInt(), op);
         case QVariant::UInt:
@@ -212,7 +359,7 @@ std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation(const QVar
         default:
             break;
     }
-    return std::make_tuple(false, QVariant(), QString("Unsupported value type '%1' for operator '%2'").arg(left.typeName()).arg(op));
+    return std::make_tuple(false, QVariant(), QString("Unsupported calc type '%1' for operator '%2'").arg(cType).arg(op));
 }
 
 //!
@@ -225,21 +372,27 @@ std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation(const QVar
 template<typename T>
 std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation_t_int(const T &left, const T &right, const QString &op)
 {
-    if (op == "+")
+    if (op == "+") {
         return std::make_tuple(true, left + right, "");
-    else if (op == "-")
+    } else if (op == "-") {
         return std::make_tuple(true, left - right, "");
-    else if (op == "/")
+    } else if (op == "/") {
+        if (right == 0)
+            return std::make_tuple(false, QVariant(), "Division by zero!");
         return std::make_tuple(true, left / right, "");
-    else if (op == "*")
+    } else if (op == "*") {
         return std::make_tuple(true, left * right, "");
-    else if (op == "%")
+    } else if (op == "%") {
+        if (right == 0)
+            return std::make_tuple(false, QVariant(), "Division by zero!");
         return std::make_tuple(true, left % right, "");
-    else if (op == "//")
+    } else if (op == "//") {
+        if (right == 0)
+            return std::make_tuple(false, QVariant(), "Division by zero!");
         return std::make_tuple(true, static_cast<int>(left / right), "");
-    else if (op == "**")
+    } else if (op == "**") {
         return std::make_tuple(true, std::pow(left, right), "");
-
+    }
     return std::make_tuple(false, QVariant(), QString("Unsupported math operator '%1'").arg(op));
 }
 
@@ -253,20 +406,27 @@ std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation_t_int(cons
 template<typename T>
 std::tuple<bool, QVariant, QString> QtTIParserMath::calcMathOperation_t_real(const T &left, const T &right, const QString &op)
 {
-    if (op == "+")
+    if (op == "+") {
         return std::make_tuple(true, left + right, "");
-    else if (op == "-")
+    } else if (op == "-") {
         return std::make_tuple(true, left - right, "");
-    else if (op == "/")
+    } else if (op == "/") {
+        if (right == 0.0)
+            return std::make_tuple(false, QVariant(), "Division by zero!");
         return std::make_tuple(true, left / right, "");
-    else if (op == "*")
+    } else if (op == "*") {
         return std::make_tuple(true, left * right, "");
-    else if (op == "%")
+    } else if (op == "%") {
+        if (right == 0.0)
+            return std::make_tuple(false, QVariant(), "Division by zero!");
         return std::make_tuple(true, std::fmod(left, right), "");
-    else if (op == "//")
+    } else if (op == "//") {
+        if (right == 0.0)
+            return std::make_tuple(false, QVariant(), "Division by zero!");
         return std::make_tuple(true, static_cast<int>(left / right), "");
-    else if (op == "**")
+    } else if (op == "**") {
         return std::make_tuple(true, std::pow(left, right), "");
+    }
 
     return std::make_tuple(false, QVariant(), QString("Unsupported math operator '%1'").arg(op));
 }

@@ -8,7 +8,6 @@
 
 #include "QtTemplateInterpreterVersion.h"
 #include "QtTIParser/QtTIParser.h"
-#include "QtTIControlBlock/QtTIControlBlockFabric.h"
 
 class QtTemplateInterpreter
 {
@@ -33,9 +32,8 @@ public:
 
 private:
     QtTIParser *_parser {nullptr};                      //!< data parser
-    QtTIControlBlockFabric *_blockFabric {nullptr};     //!< control blocks fabric
 
-    void clear(QtTIAbstractControlBlock *block);
+    void clear(QtTIAbstractParserBlock *block);
 };
 
 #endif // QTTEMPLATEINTERPRETER_H

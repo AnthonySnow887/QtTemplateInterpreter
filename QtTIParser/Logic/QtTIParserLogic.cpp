@@ -1,6 +1,7 @@
 #include "QtTIParserLogic.h"
 #include "../BracketsExpr/QtTIParserBracketsExpr.h"
 #include "../Math/QtTIParserMath.h"
+#include "../../QtTIDefines/QtTIRegExpDefines.h"
 #include <QRegExp>
 
 //!
@@ -10,8 +11,8 @@
 //!
 bool QtTIParserLogic::isLogicExpr(const QString &expr)
 {
-    QRegExp rx("^\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!]+)(\\s{1,}(and|or|&&|\\|\\||not)\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:\\<\\>\\=\\!]+)\\s{0,})+$");
-    QRegExp rx_2("^\\s{0,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:]+)(\\s{1,}([\\<\\>\\=\\!]+)\\s{1,}([\\w\\.\\,\\+\\-\\/\\%\\*\\(\\)\\ \\_\\'\\\"\\{\\}\\[\\]\\:]+)\\s{0,})+$");
+    QRegExp rx(RX_LOGIC_v1);
+    QRegExp rx_2(RX_LOGIC_v2);
     return ((rx.indexIn(expr) != -1)
             || (rx_2.indexIn(expr) != -1));
 }
@@ -50,8 +51,8 @@ bool QtTIParserLogic::isLogicExpr(const QString &expr)
 //!         {{ my_test_array () && a <= 5 }} is false
 //!
 QVariant QtTIParserLogic::parseLogic(const QString &expr,
-                                     QtTIParserArgs *parserArgs,
-                                     QtTIParserFunc *parserFunc,
+                                     QtTIAbstractParserArgs *parserArgs,
+                                     QtTIAbstractParserFunc *parserFunc,
                                      bool *isOk,
                                      QString &error)
 {
@@ -100,8 +101,8 @@ QVariant QtTIParserLogic::parseLogic(const QString &expr,
 //! \return
 //!
 QVariant QtTIParserLogic::parseLogicWithoutBrackets(const QString &expr,
-                                                    QtTIParserArgs *parserArgs,
-                                                    QtTIParserFunc *parserFunc,
+                                                    QtTIAbstractParserArgs *parserArgs,
+                                                    QtTIAbstractParserFunc *parserFunc,
                                                     bool *isOk,
                                                     QString &error)
 {
@@ -119,7 +120,7 @@ QVariant QtTIParserLogic::parseLogicWithoutBrackets(const QString &expr,
 
     // check is math expr
     if (QtTIParserMath::isMathExpr(expr))
-        return QtTIParserMath::parseMath(expr, parserArgs, isOk, error);
+        return QtTIParserMath::parseMath(expr, parserArgs, parserFunc, isOk, error);
 
     // check is logic expr
     if (!QtTIParserLogic::isLogicExpr(expr)) {
@@ -146,8 +147,8 @@ QVariant QtTIParserLogic::parseLogicWithoutBrackets(const QString &expr,
 //!         a > 5 and b <= 2
 //!
 std::tuple<bool, bool, QString> QtTIParserLogic::compareBlockCondition(const QString &str,
-                                                                       QtTIParserArgs *parserArgs,
-                                                                       QtTIParserFunc *parserFunc)
+                                                                       QtTIAbstractParserArgs *parserArgs,
+                                                                       QtTIAbstractParserFunc *parserFunc)
 {
     QString expression = str.trimmed();
     QRegExp rxInvalid("^(&&|and|\\|\\||or)\\s+");
@@ -205,11 +206,11 @@ std::tuple<bool, bool, QString> QtTIParserLogic::compareBlockCondition(const QSt
 //!         a > 5
 //!
 std::tuple<bool, bool, QString> QtTIParserLogic::compareExpression(const QString &str,
-                                                                   QtTIParserArgs *parserArgs,
-                                                                   QtTIParserFunc *parserFunc)
+                                                                   QtTIAbstractParserArgs *parserArgs,
+                                                                   QtTIAbstractParserFunc *parserFunc)
 {
-    QRegExp rxLeftRight("((not\\s+)?([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\(\\)]*)\\s+([\\<\\>\\=\\!]+)\\s+([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\(\\)]*))");
-    QRegExp rxOne("((not\\s+)?([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/\\(\\)]*))");
+    QRegExp rxLeftRight(RX_LOGIC_LEFT_RIGHT);
+    QRegExp rxOne(RX_LOGIC_ONE);
     if (rxLeftRight.indexIn(str) != -1) {
         QString notVal = rxLeftRight.cap(2).trimmed();
         QString left = rxLeftRight.cap(3).trimmed();
@@ -269,14 +270,14 @@ std::tuple<bool, bool, QString> QtTIParserLogic::compareExpression(const QString
 //! \return
 //!
 std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> QtTIParserLogic::parseParamValue(const QString &str,
-                                                                                         QtTIParserArgs *parserArgs,
-                                                                                         QtTIParserFunc *parserFunc)
+                                                                                         QtTIAbstractParserArgs *parserArgs,
+                                                                                         QtTIAbstractParserFunc *parserFunc)
 {
     if (str.isEmpty())
         return std::make_tuple(false, QVariant(), "Parse value failed (empty string passed)");
 
     // function
-    QRegExp rxFunc("(\\s*([\\w]+)\\s*\\(\\s*([A-Za-z0-9_\\ \\+\\-\\,\\.\\'\\\"\\{\\}\\[\\]\\:\\/]*)\\s*\\)\\s*)");
+    QRegExp rxFunc(RX_FUNC);
     if (rxFunc.indexIn(str) != -1) {
         QString funcName = rxFunc.cap(2).trimmed();
         QVariantList funcArgs = parserArgs->parseHelpFunctionArgs(rxFunc.cap(3).trimmed());

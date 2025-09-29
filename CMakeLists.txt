@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.7)
 
-#project(QtTemplateInterpreter VERSION 1.0.0 LANGUAGES CXX)
+#project(QtTemplateInterpreter VERSION 1.2.0 LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOUIC ON)
@@ -15,40 +15,47 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 add_library(QtTemplateInterpreter STATIC
     QtTemplateInterpreter.h
     QtTemplateInterpreterVersion.h
-    QtTIControlBlock/ControlBlocks/QtTIAbstractControlBlock.h
-    QtTIControlBlock/ControlBlocks/QtTIControlBlockFor.h
-    QtTIControlBlock/ControlBlocks/QtTIControlBlockIf.h
-    QtTIControlBlock/ControlBlocks/QtTIControlBlockSet.h
-    QtTIControlBlock/ControlBlocks/QtTIControlBlockUnset.h
-    QtTIControlBlock/QtTIControlBlockFabric.h
     QtTIDefines/QtTIDefines.h
+    QtTIDefines/QtTIRegExpDefines.h
     QtTIHelperFunction/QtTIAbstractHelperFunction.h
     QtTIHelperFunction/QtTIHelperFunction.h
     QtTIHelperFunction/QtTIHelperFunctionArg.h
+    QtTIParser/Abstract/QtTIAbstractParser.h
+    QtTIParser/Abstract/QtTIAbstractParserArgs.h
+    QtTIParser/Abstract/QtTIAbstractParserBlock.h
+    QtTIParser/Abstract/QtTIAbstractParserFunc.h
+    QtTIParser/ControlBlockFabric/ControlBlocks/QtTIAbstractControlBlock.h
+    QtTIParser/ControlBlockFabric/ControlBlocks/QtTIControlBlockFor.h
+    QtTIParser/ControlBlockFabric/ControlBlocks/QtTIControlBlockIf.h
+    QtTIParser/ControlBlockFabric/ControlBlocks/QtTIControlBlockSet.h
+    QtTIParser/ControlBlockFabric/ControlBlocks/QtTIControlBlockUnset.h
+    QtTIParser/ControlBlockFabric/QtTIControlBlockFabric.h
     QtTIParser/BracketsExpr/QtTIBracketsNode.h
+    QtTIParser/BracketsExpr/QtTIParserBracketsExpr.h
     QtTIParser/Logic/QtTIParserLogic.h
     QtTIParser/Math/QtTIMathAction.h
+    QtTIParser/Math/QtTIParserMath.h
     QtTIParser/NullCoalescingOperator/QtTIParserNullCoalescingOperator.h
+    QtTIParser/TernaryOperator/QtTIParserTernaryOperator.h
+    QtTIParser/HelperClasses/RegExp.h
     QtTIParser/QtTIParser.h
     QtTIParser/QtTIParserArgs.h
-    QtTIParser/Math/QtTIParserMath.h
-    QtTIParser/BracketsExpr/QtTIParserBracketsExpr.h
     QtTIParser/QtTIParserFunc.h
-    QtTIParser/TernaryOperator/QtTIParserTernaryOperator.h
-    QtTemplateInterpreter.cpp
-    QtTIControlBlock/ControlBlocks/QtTIControlBlockFor.cpp
-    QtTIControlBlock/ControlBlocks/QtTIControlBlockIf.cpp
-    QtTIControlBlock/ControlBlocks/QtTIControlBlockSet.cpp
-    QtTIControlBlock/ControlBlocks/QtTIControlBlockUnset.cpp
-    QtTIControlBlock/QtTIControlBlockFabric.cpp
+    QtTIParser/QtTIParserBlock.h
+    QtTIParser/ControlBlockFabric/ControlBlocks/QtTIControlBlockFor.cpp
+    QtTIParser/ControlBlockFabric/ControlBlocks/QtTIControlBlockIf.cpp
+    QtTIParser/ControlBlockFabric/ControlBlocks/QtTIControlBlockSet.cpp
+    QtTIParser/ControlBlockFabric/ControlBlocks/QtTIControlBlockUnset.cpp
+    QtTIParser/ControlBlockFabric/QtTIControlBlockFabric.cpp
     QtTIParser/Logic/QtTIParserLogic.cpp
     QtTIParser/NullCoalescingOperator/QtTIParserNullCoalescingOperator.cpp
-    QtTIParser/QtTIParser.cpp
-    QtTIParser/QtTIParserArgs.cpp
+    QtTIParser/TernaryOperator/QtTIParserTernaryOperator.cpp
     QtTIParser/Math/QtTIParserMath.cpp
     QtTIParser/BracketsExpr/QtTIParserBracketsExpr.cpp
+    QtTIParser/QtTIParser.cpp
+    QtTIParser/QtTIParserArgs.cpp
     QtTIParser/QtTIParserFunc.cpp
-    QtTIParser/TernaryOperator/QtTIParserTernaryOperator.cpp)
+    QtTemplateInterpreter.cpp)
 
 target_link_libraries(QtTemplateInterpreter PRIVATE
     Qt${QT_VERSION_MAJOR}::Core)

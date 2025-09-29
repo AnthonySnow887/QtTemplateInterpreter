@@ -3,8 +3,9 @@
 
 #include <QString>
 #include <QVariant>
-
-#include "../QtTIParserArgs.h"
+#include "QtTIMathAction.h"
+#include "../Abstract/QtTIAbstractParserArgs.h"
+#include "../Abstract/QtTIAbstractParserFunc.h"
 
 class QtTIParserMath
 {
@@ -13,10 +14,17 @@ public:
     ~QtTIParserMath() = default;
 
     static bool isMathExpr(const QString &expr);
-    static QVariant parseMath(const QString &expr, QtTIParserArgs *parserArgs, bool *isOk, QString &error);
+    static QVariant parseMath(const QString &expr, QtTIAbstractParserArgs *parserArgs, QtTIAbstractParserFunc *parserFunc, bool *isOk, QString &error);
 
 private:
-    static QVariant parseMathWithoutBrackets(const QString &expr, QtTIParserArgs *parserArgs, bool *isOk, QString &error);
+    static QVariant parseMathWithoutBrackets(const QString &expr, QtTIAbstractParserArgs *parserArgs, QtTIAbstractParserFunc *parserFunc, bool *isOk, QString &error);
+
+    static void parseLR(const QString &expr, QList<QtTIMathAction> *actions, QtTIAbstractParserArgs *parserArgs, QtTIAbstractParserFunc *parserFunc, bool *isOk, QString &error);
+
+    static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> parseParamValue(const QString &str, QtTIAbstractParserArgs *parserArgs, QtTIAbstractParserFunc *parserFunc);
+
+    static int selectCalcType(const QVariant &left, const QVariant &right);
+    static ulong typeSize(const QVariant &value);
 
     static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> calcMathOperation(const QVariant &left, const QVariant &right, const QString &op);
 

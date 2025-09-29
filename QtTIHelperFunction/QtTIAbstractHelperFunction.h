@@ -59,7 +59,7 @@ public:
     static QStringList vListArgsTypes(const QVariantList &args) {
         QStringList lst;
         for (const QVariant &a : args) {
-            if (a.isNull())
+            if (a.isNull() && a.type() != QVariant::Type::String)
                 lst << QString("Null");
             else
                 lst << QString(a.typeName());
