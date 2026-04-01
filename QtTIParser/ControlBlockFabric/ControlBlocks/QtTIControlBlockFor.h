@@ -71,6 +71,8 @@ private:
     QString _blockCond;
     QMap<int,QString> _blockBody;
 
+    bool isIndoorBlockComplete() const;
+
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> evalFor(const QStringList &args, const QVariant &container);
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> evalList(const QString &arg, const QVariant &container);
     std::tuple<bool/*isOk*/,QString/*res*/,QString/*err*/> evalMap(const QStringList &args, const QVariant &container);

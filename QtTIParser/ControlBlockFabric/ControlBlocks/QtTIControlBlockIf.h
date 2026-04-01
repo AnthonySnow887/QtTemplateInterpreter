@@ -113,6 +113,8 @@ private:
     QMap<int,QString> _elseBody;
     QList<QMap<int,QString>> _elseIfBodys;
 
+    bool isIndoorBlockComplete() const;
+
     static std::tuple<bool/*isOk*/,QVariant/*res*/,QString/*err*/> evalCond(const QString &str,
                                                                             QtTIAbstractParserArgs *parserArgs,
                                                                             QtTIAbstractParserFunc *parserFunc);

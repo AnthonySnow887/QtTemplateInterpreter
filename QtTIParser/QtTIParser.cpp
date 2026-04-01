@@ -215,6 +215,18 @@ std::tuple<bool, QString, QString> QtTIParser::parseLine(const QString &line,
                 tmpLine += res.toString();
             } else if (rBlock->type() == QtTIParserBlock::Type::Control
                        && isBlockCondEnd) {
+
+                // removing extra blank characters
+                const int lPos = rBlock->endPos_ref().second + 1;
+                const QString lineEnd = line.mid(lPos);
+                if (lineEnd.trimmed().isEmpty()) {
+                    tmpLine = QtTIParser::rstrip(tmpLine);
+                    if (rBlock->controlBlock()) {
+                        QString cBlockBody = rBlock->controlBlock()->blockBody(lineNum);
+                        rBlock->controlBlock()->setBlockBody(QtTIParser::rstrip(cBlockBody), lineNum);
+                    }
+                }
+
                 bool isOk = false;
                 QString res, err;
                 std::tie(isOk, res, err) = rBlock->controlBlock()->evalBlock();
