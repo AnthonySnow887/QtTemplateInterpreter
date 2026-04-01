@@ -61,7 +61,9 @@ bool QtTIControlBlockFor::isBlockCondEnd(const QString &blockCond)
 {
 //    QRegExp rx("^(endfor)$");
     QRegExp rx(RX_CONTROL_BLOCK_FOR_END);
-    return (rx.indexIn(blockCond) != -1);
+    if (rx.indexIn(blockCond) != -1)
+        return isIndoorBlockComplete();
+    return false;
 }
 
 //!
@@ -129,6 +131,38 @@ std::tuple<bool, QString, QString> QtTIControlBlockFor::evalBlock()
         return evalFor(paramNames, paramValue);
     }
     return std::make_tuple(false, "", QString("Unsupported block condition '%1' in line %2").arg(_blockCond).arg(lineNum()));
+}
+
+//!
+//! \brief Checking for correct closing of internal FOR blocks, if they are present in the body of the main block
+//! \return
+//!
+bool QtTIControlBlockFor::isIndoorBlockComplete() const
+{
+    QRegExp rxBlock("\\{\\%(.*)\\%\\}");
+    QRegExp rxStart(RX_CONTROL_BLOCK_FOR_START);
+    QRegExp rxEnd(RX_CONTROL_BLOCK_FOR_END);
+    int openForBlocks = 0;
+    QMapIterator<int,QString> it(_blockBody);
+    while (it.hasNext()) {
+        it.next();
+        const QString bodyData = it.value();
+        int index = 0;
+        while (index < bodyData.size()) {
+            index = rxBlock.indexIn(bodyData, index);
+            if (index == -1)
+                break;
+            index += rxBlock.pattern().size();
+            const QString blockValue = rxBlock.cap(1).trimmed();
+            // find start block
+            if (rxStart.indexIn(blockValue) != -1)
+                openForBlocks++;
+            // find end block
+            if (rxEnd.indexIn(blockValue) != -1)
+                openForBlocks--;
+        }
+    }
+    return (openForBlocks == 0);
 }
 
 //!

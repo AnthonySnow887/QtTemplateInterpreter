@@ -66,10 +66,10 @@ bool QtTIControlBlockIf::isBlockCondIntermediate(const QString &blockCond)
 {
     QRegExp rxElseIf(RX_CONTROL_BLOCK_ELSE_IF_START);
     if ((rxElseIf.indexIn(blockCond) != -1) && _elseCond.isEmpty())
-        return true;
+        return isIndoorBlockComplete();
     QRegExp rxElse(RX_CONTROL_BLOCK_ELSE);
     if (rxElse.indexIn(blockCond) != -1 && _elseCond.isEmpty())
-        return true;
+        return isIndoorBlockComplete();
     return false;
 }
 
@@ -102,7 +102,9 @@ void QtTIControlBlockIf::appendBlockCondIntermediate(const QString &blockCond)
 bool QtTIControlBlockIf::isBlockCondEnd(const QString &blockCond)
 {
     QRegExp rx(RX_CONTROL_BLOCK_IF_END);
-    return (rx.indexIn(blockCond) != -1);
+    if (rx.indexIn(blockCond) != -1)
+        return isIndoorBlockComplete();
+    return false;
 }
 
 //!
@@ -228,6 +230,93 @@ QString QtTIControlBlockIf::blockBody(const int lineNum) const
         }
     }
     return QString();
+}
+
+bool QtTIControlBlockIf::isIndoorBlockComplete() const
+{
+    QRegExp rxBlock("\\{\\%(.*)\\%\\}");
+    QRegExp rxStart(RX_CONTROL_BLOCK_IF_START);
+    QRegExp rxElseIfStart(RX_CONTROL_BLOCK_ELSE_IF_START);
+//    return ((rx.indexIn(blockCond) != -1)
+//            && (rxElseIf.indexIn(blockCond) == -1));
+    QRegExp rxEnd(RX_CONTROL_BLOCK_IF_END);
+//    return (rx.indexIn(blockCond) != -1);
+    int openIfBlocks = 0;
+
+    // check IF
+    QMapIterator<int,QString> it(_ifBody);
+    while (it.hasNext()) {
+        it.next();
+        const QString bodyData = it.value();
+        int index = 0;
+        while (index < bodyData.size()) {
+            index = rxBlock.indexIn(bodyData, index);
+            if (index == -1)
+                break;
+            index += rxBlock.pattern().size();
+            const QString blockValue = rxBlock.cap(1).trimmed();
+            // find start block
+            if (rxStart.indexIn(blockValue) != -1
+                && rxElseIfStart.indexIn(blockValue) == -1)
+                openIfBlocks++;
+            // find end block
+            if (rxEnd.indexIn(blockValue) != -1)
+                openIfBlocks--;
+        }
+    }
+    if (openIfBlocks != 0)
+        return false;
+
+    // check ELSEIF
+    for (int i = 0; i < _elseIfBodys.size(); i++) {
+        const QMap<int,QString> elseIfBody = _elseIfBodys[i];
+        QMapIterator<int,QString> it(elseIfBody);
+        while (it.hasNext()) {
+            it.next();
+            const QString bodyData = it.value();
+            int index = 0;
+            while (index < bodyData.size()) {
+                index = rxBlock.indexIn(bodyData, index);
+                if (index == -1)
+                    break;
+                index += rxBlock.pattern().size();
+                const QString blockValue = rxBlock.cap(1).trimmed();
+                // find start block
+                if (rxStart.indexIn(blockValue) != -1)
+                    openIfBlocks++;
+                // find end block
+                if (rxEnd.indexIn(blockValue) != -1)
+                    openIfBlocks--;
+            }
+        }
+        if (openIfBlocks != 0)
+            return false;
+    }
+
+    // check ELSE
+    QMapIterator<int,QString> it2(_elseBody);
+    while (it.hasNext()) {
+        it.next();
+        const QString bodyData = it.value();
+        int index = 0;
+        while (index < bodyData.size()) {
+            index = rxBlock.indexIn(bodyData, index);
+            if (index == -1)
+                break;
+            index += rxBlock.pattern().size();
+            const QString blockValue = rxBlock.cap(1).trimmed();
+            // find start block
+            if (rxStart.indexIn(blockValue) != -1)
+                openIfBlocks++;
+            // find end block
+            if (rxEnd.indexIn(blockValue) != -1)
+                openIfBlocks--;
+        }
+    }
+    if (openIfBlocks != 0)
+        return false;
+
+    return true;
 }
 
 //!
