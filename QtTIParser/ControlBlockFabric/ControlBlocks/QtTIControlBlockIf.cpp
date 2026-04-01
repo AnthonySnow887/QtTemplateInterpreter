@@ -232,15 +232,16 @@ QString QtTIControlBlockIf::blockBody(const int lineNum) const
     return QString();
 }
 
+//!
+//! \brief Checking for correct closing of internal IF blocks, if they are present in the body of the main block
+//! \return
+//!
 bool QtTIControlBlockIf::isIndoorBlockComplete() const
 {
     QRegExp rxBlock("\\{\\%(.*)\\%\\}");
     QRegExp rxStart(RX_CONTROL_BLOCK_IF_START);
     QRegExp rxElseIfStart(RX_CONTROL_BLOCK_ELSE_IF_START);
-//    return ((rx.indexIn(blockCond) != -1)
-//            && (rxElseIf.indexIn(blockCond) == -1));
     QRegExp rxEnd(RX_CONTROL_BLOCK_IF_END);
-//    return (rx.indexIn(blockCond) != -1);
     int openIfBlocks = 0;
 
     // check IF
