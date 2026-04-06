@@ -238,7 +238,6 @@ QString QtTIControlBlockIf::blockBody(const int lineNum) const
 //!
 bool QtTIControlBlockIf::isIndoorBlockComplete() const
 {
-    QRegExp rxBlock("\\{\\%(.*)\\%\\}");
     QRegExp rxStart(RX_CONTROL_BLOCK_IF_START);
     QRegExp rxElseIfStart(RX_CONTROL_BLOCK_ELSE_IF_START);
     QRegExp rxEnd(RX_CONTROL_BLOCK_IF_END);
@@ -251,17 +250,18 @@ bool QtTIControlBlockIf::isIndoorBlockComplete() const
         const QString bodyData = it.value();
         int index = 0;
         while (index < bodyData.size()) {
-            index = rxBlock.indexIn(bodyData, index);
+            QString condAll, cond;
+            std::tie(condAll, cond, index) = parseBlockCondition(bodyData, index);
             if (index == -1)
                 break;
-            index += rxBlock.pattern().size();
-            const QString blockValue = rxBlock.cap(1).trimmed();
+            index += condAll.size();
+            cond = cond.trimmed();
             // find start block
-            if (rxStart.indexIn(blockValue) != -1
-                && rxElseIfStart.indexIn(blockValue) == -1)
+            if (rxStart.indexIn(cond) != -1
+                && rxElseIfStart.indexIn(cond) == -1)
                 openIfBlocks++;
             // find end block
-            if (rxEnd.indexIn(blockValue) != -1)
+            if (rxEnd.indexIn(cond) != -1)
                 openIfBlocks--;
         }
     }
@@ -277,16 +277,17 @@ bool QtTIControlBlockIf::isIndoorBlockComplete() const
             const QString bodyData = it.value();
             int index = 0;
             while (index < bodyData.size()) {
-                index = rxBlock.indexIn(bodyData, index);
+                QString condAll, cond;
+                std::tie(condAll, cond, index) = parseBlockCondition(bodyData, index);
                 if (index == -1)
                     break;
-                index += rxBlock.pattern().size();
-                const QString blockValue = rxBlock.cap(1).trimmed();
+                index += condAll.size();
+                cond = cond.trimmed();
                 // find start block
-                if (rxStart.indexIn(blockValue) != -1)
+                if (rxStart.indexIn(cond) != -1)
                     openIfBlocks++;
                 // find end block
-                if (rxEnd.indexIn(blockValue) != -1)
+                if (rxEnd.indexIn(cond) != -1)
                     openIfBlocks--;
             }
         }
@@ -301,16 +302,17 @@ bool QtTIControlBlockIf::isIndoorBlockComplete() const
         const QString bodyData = it.value();
         int index = 0;
         while (index < bodyData.size()) {
-            index = rxBlock.indexIn(bodyData, index);
+            QString condAll, cond;
+            std::tie(condAll, cond, index) = parseBlockCondition(bodyData, index);
             if (index == -1)
                 break;
-            index += rxBlock.pattern().size();
-            const QString blockValue = rxBlock.cap(1).trimmed();
+            index += condAll.size();
+            cond = cond.trimmed();
             // find start block
-            if (rxStart.indexIn(blockValue) != -1)
+            if (rxStart.indexIn(cond) != -1)
                 openIfBlocks++;
             // find end block
-            if (rxEnd.indexIn(blockValue) != -1)
+            if (rxEnd.indexIn(cond) != -1)
                 openIfBlocks--;
         }
     }

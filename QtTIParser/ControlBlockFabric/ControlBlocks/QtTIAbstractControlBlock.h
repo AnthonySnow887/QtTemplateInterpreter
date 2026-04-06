@@ -243,6 +243,69 @@ protected:
         return _parser->parseAndExecBlockData(str, {lineNum, linePos});
     }
 
+    //!
+    //! \brief Search for the control block condition body
+    //! \param data Input string data
+    //! \param pos Position to start searching
+    //! \return
+    //!
+    std::tuple<QString/*all*/,QString/*only cond*/,int/*start pos*/> parseBlockCondition(const QString &data,
+                                                                                         const int &pos = 0) const
+    {
+        if (pos >= data.size())
+            return std::make_tuple("", "", -1);
+
+        bool isString = false;
+        bool isBlock = false;
+        QString tmpCond;
+        int tmpCondStart = -1;
+        for (int i = pos; i < data.size(); i++) {
+            const int chPos = i;
+            const QChar ch = data[chPos];
+
+            QChar chPrev;
+            if (i > 0)
+                chPrev = data[i - 1];
+            QChar chNext;
+            if (i < data.size() - 1)
+                chNext = data[i + 1];
+
+            // check is string
+            if ((ch == '"' || ch == '\'')
+                && chPrev != '\\'
+                && isBlock)
+                isString = !isString;
+
+            // check start block
+            if (!isString
+                && !isBlock
+                && ch == '{'
+                && chNext == '%') {
+                tmpCond += ch;
+                tmpCondStart = chPos;
+                isBlock = true;
+                continue;
+            }
+            // check end block
+            if (!isString
+                && isBlock
+                && ch == '}'
+                && chPrev == '%') {
+                tmpCond += ch;
+
+                // return found result
+                QStringRef onlyCond = tmpCond.midRef(2);
+                onlyCond = onlyCond.mid(0, onlyCond.size() - 2);
+                return std::make_tuple(tmpCond, onlyCond.toString(), tmpCondStart);
+            }
+
+            // else is block
+            if (isBlock)
+                tmpCond += ch;
+        }
+        return std::make_tuple("", "", -1);
+    }
+
 private:
     int _lineNum {-1};                                  //!< control block line number
     int _linePos {-1};                                  //!< control block position number in line

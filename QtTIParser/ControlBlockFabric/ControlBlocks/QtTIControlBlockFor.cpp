@@ -139,7 +139,6 @@ std::tuple<bool, QString, QString> QtTIControlBlockFor::evalBlock()
 //!
 bool QtTIControlBlockFor::isIndoorBlockComplete() const
 {
-    QRegExp rxBlock("\\{\\%(.*)\\%\\}");
     QRegExp rxStart(RX_CONTROL_BLOCK_FOR_START);
     QRegExp rxEnd(RX_CONTROL_BLOCK_FOR_END);
     int openForBlocks = 0;
@@ -149,16 +148,17 @@ bool QtTIControlBlockFor::isIndoorBlockComplete() const
         const QString bodyData = it.value();
         int index = 0;
         while (index < bodyData.size()) {
-            index = rxBlock.indexIn(bodyData, index);
+            QString condAll, cond;
+            std::tie(condAll, cond, index) = parseBlockCondition(bodyData, index);
             if (index == -1)
                 break;
-            index += rxBlock.pattern().size();
-            const QString blockValue = rxBlock.cap(1).trimmed();
+            index += condAll.size();
+            cond = cond.trimmed();
             // find start block
-            if (rxStart.indexIn(blockValue) != -1)
+            if (rxStart.indexIn(cond) != -1)
                 openForBlocks++;
             // find end block
-            if (rxEnd.indexIn(blockValue) != -1)
+            if (rxEnd.indexIn(cond) != -1)
                 openForBlocks--;
         }
     }
